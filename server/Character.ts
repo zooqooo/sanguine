@@ -47,7 +47,7 @@ export default class SanguineCharacter extends SanguineActor {
     }
 
     /* -----------------------------
-                BONUSES
+              INITIALIZE
     ----------------------------- */
 
     beginCharacterInitialize(): { classChoices: string[], weaponChoices: string [] } {
@@ -68,7 +68,7 @@ export default class SanguineCharacter extends SanguineActor {
 
         // add appropriate weapon to inventory
 
-        this.addMultipleBonusSources([classBonus, weaponBonus])
+        this.stats.addMultipleSources([classBonus, weaponBonus])
         this.initialized = true
     }
 

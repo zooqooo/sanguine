@@ -1,17 +1,17 @@
-import { damageType } from "../_types/StatTypes"
+import { damageQuant, damageType, StatTypeEnum } from "../_types/StatTypes"
 import CombatAction from "./CombatAction"
 import CombatActor from "./CombatActor"
 
 export default class CombatAttack {
     private defenders: CombatActor[]
-    private damages: { quantity: number, type: damageType }[]
+    private damages: damageQuant[]
 
     private accuracy: number
     private crit: boolean
 
     constructor(action: CombatAction) {
         this.defenders = new Array<CombatActor>()
-        this.damages = new Array<{ quantity: number, type: damageType }>()
+        this.damages = new Array<damageQuant>()
 
         this.accuracy = 1
         this.crit = false
@@ -47,19 +47,49 @@ export default class CombatAttack {
 
     }
 
-    getDefenders(): CombatActor[] {
-        return this.defenders
+    perform(): void {
+        for ( const defender of this.defenders ) {
+            this.processAttack(defender)
+        }
     }
 
-    getDamages(): { quantity: number, type: damageType }[] {
-        return this.damages
+    private processAttack(defender: CombatActor): void {
+        //evasion
+        if ( defender.stats.performTrial(StatTypeEnum.Evasion, this.accuracy) ) {
+            return
+        }
+
+        //apply crit effects and pre-hit effects
+
+        //calculate, store, and apply damages
+        let damages: damageQuant[] = []
+        for ( const rawDamage of this.damages ) {
+            const finalDamage = this.processDamage(rawDamage, defender)
+            damages.push(finalDamage)
+            defender.applyDamage(finalDamage)
+        }
+        
+        //remove pre-hit effects
+        //apply on-hit effects
+
+        //retaliations
     }
 
-    getAccuracy(): number {
-        return this.accuracy
-    }
+    private processDamage ( damage: damageQuant, defender: CombatActor ): damageQuant {
+        const damageType = damage.type
+        let calcDamage = damage.quantity
+        //protection
+        const protection = defender.stats.getStatValue(StatTypeEnum.Protection, damageType)
+        calcDamage = calcDamage - ( calcDamage * protection )
+        //resistance
+        const resistance = defender.stats.getStatValue(StatTypeEnum.Resistance, damageType)
+        calcDamage = calcDamage - ( calcDamage * resistance )
+        //armor
+        const armor = defender.stats.getStatValue(StatTypeEnum.Armor, damageType)
+        calcDamage = calcDamage * ( 100 / ( 100 + armor ) )
+        //ward
 
-    isCrit(): boolean {
-        return this.crit
+
+        return { quantity: calcDamage, type: damageType}
     }
 }

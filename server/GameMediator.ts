@@ -1,10 +1,10 @@
 import { TILES } from "./_data/TILES_DATA"
 import { ITEMS } from "./_data/ITEMS_DATA"
-import { STAT_TYPES } from "./_data/STAT_TYPES_DATA"
+import { DAMAGE_ACCUMULATORS, STAT_TYPES } from "./_data/STAT_TYPES_DATA"
 import { BONUS_SOURCES } from "./_data/BONUS_SOURCES_DATA"
 
 import { dbBonusSource, dbItem, dbTile, itemTypeEnum } from "./_types/DBTypes"
-import { statInfo, StatTypeEnum } from "./_types/StatTypes"
+import { damageAccumulatorInfo, DamageSuperTypeEnum, statInfo, StatTypeEnum } from "./_types/StatTypes"
 
 import SanguineGame from "./Game"
 import Serializer from "./Serializer"
@@ -17,6 +17,7 @@ export default class SanguineGameMediator {
     private tiles: Map<number, dbTile>
     private items: Map<string, dbItem<ItemFeature>>
     private statTypes: Map<StatTypeEnum, statInfo>
+    private damageAccumulators: Map<DamageSuperTypeEnum, damageAccumulatorInfo> 
     private bonusSources: Map<string, dbBonusSource>
 
     constructor() {
@@ -40,6 +41,12 @@ export default class SanguineGameMediator {
         for (const type of STAT_TYPES) {
             if (this.statTypes.has(type.name)) throw new Error(`Index intersection in STAT_TYPES data object, index ${StatTypeEnum[type.name]}`)
             this.statTypes.set(type.name, type)
+        }
+
+        this.damageAccumulators = new Map<DamageSuperTypeEnum, damageAccumulatorInfo>()
+        for (const accumulator of DAMAGE_ACCUMULATORS) {
+            if (this.damageAccumulators.has(accumulator.damageSuperType)) throw new Error(`Index intersection in STAT_TYPES data object, index ${StatTypeEnum[accumulator.damageSuperType]}`)
+            this.damageAccumulators.set(accumulator.damageSuperType, accumulator)
         }
 
         this.bonusSources = new Map<string, dbBonusSource>()

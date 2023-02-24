@@ -1,4 +1,4 @@
-import { statInfo, StatStackingTypeEnum, StatTypeEnum } from "../_types/StatTypes"
+import { damageAccumulatorInfo, DamageSuperTypeEnum, statInfo, StatStackingTypeEnum, StatTypeEnum } from "../_types/StatTypes"
 
 const BASE_STATS: Array<statInfo> = [
     {
@@ -163,6 +163,64 @@ const DEFENSIVE_STATS: Array<statInfo> = [
     }
 ]
 
+const ATTACK_STATS: Array<statInfo> = [
+    {
+        name: StatTypeEnum.Accuracy,
+        stacking: StatStackingTypeEnum.Arithmetic,
+        hasMin: true,
+        min: 0,
+        linearOnly: true
+    },
+    {
+        name: StatTypeEnum.Critical_Chance,
+        stacking: StatStackingTypeEnum.Further
+    },
+    {
+        name: StatTypeEnum.Critical_Stamina_Damage,
+        stacking: StatStackingTypeEnum.Arithmetic,
+        hasMin: true,
+        min: 0,
+        linearOnly: true,
+        noPenalty: true
+    },
+    {
+        name: StatTypeEnum.Critical_Tension_Damage,
+        stacking: StatStackingTypeEnum.Arithmetic,
+        hasMin: true,
+        min: 0,
+        linearOnly: true,
+        noPenalty: true
+    },
+    {
+        name: StatTypeEnum.Max_Damage,
+        stacking: StatStackingTypeEnum.Arithmetic,
+        damageTyped: true
+    },
+    {
+        name: StatTypeEnum.Bonus_Damage,
+        stacking: StatStackingTypeEnum.Arithmetic,
+        damageTyped: true
+    },
+    {
+        name: StatTypeEnum.Advantage,
+        stacking: StatStackingTypeEnum.Arithmetic,
+        hasMin: true,
+        min: 0,
+        linearOnly: true,
+        noPenalty: true,
+        damageTyped: true
+    },
+    {
+        name: StatTypeEnum.Disadvantage,
+        stacking: StatStackingTypeEnum.Arithmetic,
+        hasMin: true,
+        min: 0,
+        linearOnly: true,
+        noPenalty: true,
+        damageTyped: true
+    }
+]
+
 const STATIC_STATS: Array<statInfo> = [
     {
         name: StatTypeEnum.Max_Vitality,
@@ -226,8 +284,27 @@ export const STAT_TYPES: Array<statInfo> = new Array<statInfo>().concat(
     CONSTITUTION_STATS,
     REBUFF_STATS,
     DEFENSIVE_STATS,
+    ATTACK_STATS,
     OTHER_STATS,
     STATIC_STATS,
     TEST_STATS,
     [ { name: StatTypeEnum.None, stacking: StatStackingTypeEnum.None, } ]
 )
+
+export const DAMAGE_ACCUMULATORS: damageAccumulatorInfo[] = [
+    {
+        damageSuperType: DamageSuperTypeEnum.Stamina,
+    },
+    {
+        damageSuperType: DamageSuperTypeEnum.Tension,
+    },
+    {
+        damageSuperType: DamageSuperTypeEnum.Dread,
+    },
+    {
+        damageSuperType: DamageSuperTypeEnum.Stall,
+    },
+    {
+        damageSuperType: DamageSuperTypeEnum.Exhaustion,
+    }
+]

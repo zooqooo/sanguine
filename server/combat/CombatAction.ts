@@ -1,15 +1,15 @@
-import { ActionTypeEnum as CombatActionTypeEnum } from "../_types/ActionTypes"
+import { ActionTypeEnum } from "../_types/CombatTypes"
 import CombatActor from "./CombatActor"
 
 export default class CombatAction {
     private actor: CombatActor
     private waitTime: number
-    private type: CombatActionTypeEnum
+    private type: ActionTypeEnum
 
     constructor(actor: CombatActor) {
         this.actor = actor
         this.waitTime = 10 
-        this.type = CombatActionTypeEnum.Attack
+        this.type = ActionTypeEnum.Attack
     }
 
     getActor(): CombatActor {
@@ -21,6 +21,6 @@ export default class CombatAction {
     }
 
     isAttack(): boolean {
-        return this.type == CombatActionTypeEnum.Attack
+        return this.type == ActionTypeEnum.Attack
     }
 }

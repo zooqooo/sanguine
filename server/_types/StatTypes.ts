@@ -15,7 +15,7 @@ export enum QuantTypeEnum {
 }
 
 export enum StatStackingTypeEnum {
-    Arithmetic,
+	Arithmetic,
     Further,
     None
 }
@@ -49,6 +49,14 @@ export enum StatTypeEnum {
 	Protection,
 	Resistance,
 	Armor,
+	Accuracy,
+	Critical_Chance,
+	Critical_Stamina_Damage,
+	Critical_Tension_Damage,
+	Max_Damage,
+	Bonus_Damage,
+	Advantage,
+	Disadvantage,
 	Max_Vitality,
 	Exhaustion_Limit_1,
 	Exhaustion_Limit_2,
@@ -84,14 +92,17 @@ export enum DamageBaseTypeEnum {
 }
 
 export enum DamageSuperTypeEnum {
-    All,
+	All,
 	Stamina,
 	Tension,
 	Stall,
-	Dread
+	Dread,
+	Exhaustion
 }
 
 export type damageType = {baseType: DamageBaseTypeEnum, superType: DamageSuperTypeEnum}
+
+export type damageQuant = {quantity: number, type: damageType}
 
 export type statInfo = {
     name: StatTypeEnum,
@@ -103,4 +114,8 @@ export type statInfo = {
     hasMax?: boolean,
     max?: number,
     damageTyped?: boolean
+}
+
+export type damageAccumulatorInfo = {
+	damageSuperType: DamageSuperTypeEnum
 }

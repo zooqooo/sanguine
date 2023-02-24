@@ -28,7 +28,6 @@
 		"phaser": "^3.55.2",
 		"phaser3-rex-plugins": "^1.1.79",
 		"pluralize": "^8.0.0",
-		"rxjs": "^7.8.0",
 		"shelljs": "^0.8.5",
 		"sigmoid": "^0.0.1",
 		"webfontloader": "^1.6.28"

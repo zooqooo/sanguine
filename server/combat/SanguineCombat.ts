@@ -1,20 +1,17 @@
 import SanguineActor from "../Actor"
 import { damageType, StatTypeEnum } from "../_types/StatTypes"
-import CombatAttack from "./CombatAttack"
 import CombatActor from "./CombatActor"
-import { interval, takeWhile } from "rxjs"
+import { transitGameTick } from "../_types/CombatTypes"
 
 export default class SanguineCombat {
     private started: boolean
-    private over: boolean
+    private processing: boolean
     private combatants: Map<string, CombatActor>
     private elapsedGameTicks: number
-    private intervalMS: number
     
     constructor() {
         this.started = false
-        this.over = false
-        this.intervalMS = 1000
+        this.processing = false
         this.elapsedGameTicks = 0
         this.combatants = new Map<string, CombatActor>()
     }
@@ -30,11 +27,6 @@ export default class SanguineCombat {
     /* -----------------------------
                SETTERS
     ----------------------------- */
-
-    //for testing use only
-    setIntervalMS(intervalMS: number): void {
-        this.intervalMS = intervalMS
-    }
     
     addCombatant(actor: SanguineActor): Map<string, CombatActor> {
         const combatActor = new CombatActor(this.createID(actor.getName()), actor)
@@ -47,6 +39,15 @@ export default class SanguineCombat {
         //TODO: ensure return value doesn't intersect with existing members of the combat scene
         return actorName
     }
+
+    setActorStance(): void {
+        // retrieve input from user or from an AI and store the action in a map on this object
+        // it might be worthwhile to check that the actor hasn't already declared a stance
+    }
+
+    setActorAction(): void {
+        // retrieve input from user or from an AI and store the action in a map on this object
+    }
     
     /* -----------------------------
               COMBAT LOOP
@@ -57,16 +58,21 @@ export default class SanguineCombat {
             throw new Error(`Combat already started`)
         }
 
-        interval(this.intervalMS)
-            .pipe(takeWhile(() => !this.over))
-            .subscribe(() => {
-                // there should be some sort of error handling for if the game tick stalls and fails to
-                // complete in less than 1 second
-                this.makeGameTick()
-            })
+        this.started = true
+        this.requestGameTick()
     }
 
-    private makeGameTick() {
+    requestGameTick(): transitGameTick {
+        if ( this.processing ) {
+            return {}
+        }
+        this.processing = true
+        const gameTick = this.makeGameTick()
+        this.processing = false
+        return gameTick
+    }
+
+    private makeGameTick(): transitGameTick {
         let readyActors: CombatActor[] = []
         for ( const [id, combatant] of this.combatants ) {
             const readyToAct = combatant.makeGameTick()
@@ -75,12 +81,8 @@ export default class SanguineCombat {
             }
         }
         if ( readyActors.length > 0 ) this.takeActions(readyActors)
-        this.updateActorActions()
         this.elapsedGameTicks++
-    }
-    
-    private updateActorActions(): void {
-        //TODO loop through the actors and see if they've declared a stance or action
+        return {}
     }
     
     private takeActions(readyActors: CombatActor[]): void {
@@ -88,63 +90,8 @@ export default class SanguineCombat {
         while ( readyActors.length > 0 ) {
             const currentActor = readyActors.pop()!
             if ( currentActor.hasActionReady() ) {
-                this.takeAction(currentActor)
+                currentActor.takeAction()
             }
         }
-    }
-
-    private takeAction(actor: CombatActor): void {
-        const action = actor.getAction()
-        if ( action.isAttack() ) {
-            const attack = new CombatAttack(action) //the constructor takes the action and determines all the random elements
-            for ( const defender of attack.getDefenders() ) {
-                this.processAttack(attack, defender) //the now static attack is then processed by each defender to determine the effectivness
-            }
-        }
-        
-        actor.resetWaitTime()
-    }
-        
-    /* -----------------------------
-            ACTION PROCESSORS
-    ----------------------------- */
-        
-    private processAttack( attack: CombatAttack, defender: CombatActor ): void {
-        //evasion
-        if ( defender.performTrial(StatTypeEnum.Evasion, attack.getAccuracy()) ) {
-            return
-        }
-
-        //apply crit effects and pre-hit effects
-
-        //calculate, store, and apply damages
-        let damages: { quantity: number, type: damageType }[] = []
-        for ( const rawDamage of attack.getDamages() ) {
-            const finalDamage = this.processDamage(rawDamage.quantity, rawDamage.type, defender)
-            damages.push(finalDamage)
-            defender.applyDamage(finalDamage)
-        }
-        
-        //remove pre-hit effects
-        //apply on-hit effects
-
-        //retaliations
-    }
-
-    private processDamage ( damage: number, damageType: damageType, defender: CombatActor ): { quantity: number, type: damageType } {
-        let calcDamage = damage
-        //protection
-        const protection = defender.getStat(StatTypeEnum.Protection, damageType)
-        calcDamage = calcDamage - ( calcDamage * protection )
-        //resistance
-        const resistance = defender.getStat(StatTypeEnum.Resistance, damageType)
-        calcDamage = calcDamage - ( calcDamage * resistance )
-        //armor
-        const armor = defender.getStat(StatTypeEnum.Armor, damageType)
-        calcDamage = calcDamage * ( 100 / ( 100 + armor ) )
-        //ward
-
-
-        return { quantity: calcDamage, type: damageType}
     }
 }

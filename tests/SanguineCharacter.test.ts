@@ -28,8 +28,8 @@ describe('Construct dummy character', () => {
 
     expect(character.getName()).to.deep.equal('Bobby Bill')
     expect(character.getLocation()).to.deep.equal(1)
-    expect(character.getInventory()).to.deep.equal(new Inventory())
-    expect(character.getStats()).to.deep.equal(new ActorStats().getStatValues())
+    expect(character.inventory).to.deep.equal(new Inventory())
+    expect(character.stats.getStatValues()).to.deep.equal(new ActorStats().getStatValues())
     
   })
 
@@ -40,12 +40,12 @@ describe('Construct dummy character', () => {
     expect(character.getLocation()).to.deep.equal(8)
 
 
-    expect(character.getInventory()).to.deep.equal(new Inventory())
+    expect(character.inventory).to.deep.equal(new Inventory())
 
     let mockStats = new ActorStats()
     mockStats.addSource(new BonusSource("Sanguine Hero"))
 
-    expect(character.getStats()).to.deep.equal(mockStats.getStatValues())
+    expect(character.stats.getStatValues()).to.deep.equal(mockStats.getStatValues())
   })
 })
 
@@ -71,30 +71,30 @@ describe('Test Add to Inventory', () => {
     const ITEM_2 = new Item(SERIALIZED_ITEM_2)
     const ITEM_3 = Item.serializedtoItems(SERIALIZED_ITEM_3)
 
-    character.addToInventory(ITEM_1)
-    expect(character.getInventory().getItemQuantity(SERIALIZED_ITEM_1.id)).to.deep.equal(SERIALIZED_ITEM_1.quantity)
+    character.inventory.add(ITEM_1)
+    expect(character.inventory.getItemQuantity(SERIALIZED_ITEM_1.id)).to.deep.equal(SERIALIZED_ITEM_1.quantity)
 
-    character.addToInventory(ITEM_2)
-    expect(character.getInventory().getItemQuantity(SERIALIZED_ITEM_2.id)).to.deep.equal(SERIALIZED_ITEM_2.quantity)
+    character.inventory.add(ITEM_2)
+    expect(character.inventory.getItemQuantity(SERIALIZED_ITEM_2.id)).to.deep.equal(SERIALIZED_ITEM_2.quantity)
 
-    character.addMultipleToInventory(ITEM_3)
-    expect(character.getInventory().getItemQuantity(SERIALIZED_ITEM_3[1].id)).to.deep.equal(SERIALIZED_ITEM_3[1].quantity)
-    expect(character.getInventory().getItemQuantity(SERIALIZED_ITEM_3[0].id)).to.deep.equal(SERIALIZED_ITEM_3[0].quantity+SERIALIZED_ITEM_1.quantity)
+    character.inventory.addMultiple(ITEM_3)
+    expect(character.inventory.getItemQuantity(SERIALIZED_ITEM_3[1].id)).to.deep.equal(SERIALIZED_ITEM_3[1].quantity)
+    expect(character.inventory.getItemQuantity(SERIALIZED_ITEM_3[0].id)).to.deep.equal(SERIALIZED_ITEM_3[0].quantity+SERIALIZED_ITEM_1.quantity)
   })
 })
 
 describe('Stat bonus sources should be able to be added and removed from a character', () => {
   it('Add and remove bonus sources', () => {
     let character = new SanguineCharacter(DUMMY_CHARACTER_1)
-    expect(character.getStats()).to.deep.equal(new ActorStats().getStatValues())
-    character.addBonusSource(new BonusSource(MOCK_BONUS_SOURCES[0]))
-    character.addBonusSource(new BonusSource(MOCK_BONUS_SOURCES[1]))
-    expect(character.getStat(StatTypeEnum.Vigor)).to.deep.equal(4)
-    expect(character.getStat(StatTypeEnum.Grit)).to.deep.equal(2)
-    expect(character.getStat(StatTypeEnum.Tenacity)).to.deep.equal(3)
-    character.removeBonusSource(new BonusSource(MOCK_BONUS_SOURCES[1]))
-    expect(character.getStat(StatTypeEnum.Vigor)).to.deep.equal(4)
-    expect(character.getStat(StatTypeEnum.Grit)).to.deep.equal(2)
-    expect(character.getStat(StatTypeEnum.Tenacity)).to.deep.equal(0)
+    expect(character.stats.getStatValues()).to.deep.equal(new ActorStats().getStatValues())
+    character.stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[0]))
+    character.stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[1]))
+    expect(character.stats.getStatValue(StatTypeEnum.Vigor)).to.deep.equal(4)
+    expect(character.stats.getStatValue(StatTypeEnum.Grit)).to.deep.equal(2)
+    expect(character.stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(3)
+    character.stats.removeSource(new BonusSource(MOCK_BONUS_SOURCES[1]))
+    expect(character.stats.getStatValue(StatTypeEnum.Vigor)).to.deep.equal(4)
+    expect(character.stats.getStatValue(StatTypeEnum.Grit)).to.deep.equal(2)
+    expect(character.stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(0)
   })
 })

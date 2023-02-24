@@ -28,7 +28,7 @@ export default class SanguineGame {
     ----------------------------- */
 
     getInventory() : Inventory {
-        return this.character.getInventory()
+        return this.character.inventory
     }
 
     getRegionNames() : string[] {
@@ -66,7 +66,7 @@ export default class SanguineGame {
                 response = { drops: tileDrops, bounty: this.location.getBounty(), inventory: this.getInventory().transit() }
             } else {
                 //console.log(this.itemsToString(tileDrops, 'Found'))
-                let inventory = this.character.addMultipleToInventory(tileDrops).transit()
+                let inventory = this.character.inventory.addMultiple(tileDrops).transit()
                 this.save()
                 response = { drops: Item.itemsToString(tileDrops, 'Found'), bounty: this.location.getBounty(), inventory: inventory }
             }

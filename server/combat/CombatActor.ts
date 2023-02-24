@@ -1,17 +1,21 @@
 import SanguineActor from "../Actor"
-import { damageType, StatTypeEnum } from "../_types/StatTypes"
+import ActorStats from "../actor_stats/ActorStats"
+import { damageQuant, damageType, StatTypeEnum } from "../_types/StatTypes"
 import CombatAction from "./CombatAction"
+import CombatAttack from "./CombatAttack"
 
 export default class CombatActor {
     private id: string
-    private actor: SanguineActor
+    readonly actor: SanguineActor
+    readonly stats: ActorStats
     private waitTime: number
     private action: CombatAction | undefined
     
     constructor(id: string, actor: SanguineActor) {
         this.id = id
         this.actor = actor
-        this.waitTime = 100 * ( 1 - actor.getStat(StatTypeEnum.Initiative) )
+        this.stats = actor.stats
+        this.waitTime = 100 * ( 1 - actor.stats.getStatValue(StatTypeEnum.Initiative) )
     }
     
     /* -----------------------------
@@ -40,14 +44,6 @@ export default class CombatActor {
         return false
     }
 
-    getStat(name: StatTypeEnum, damageType?: damageType): number {
-        return this.actor.getStat(name)
-    }
-
-    performTrial(statName: StatTypeEnum, difficulty: number): boolean {
-        return this.actor.performTrial(statName, difficulty)
-    }
-
     /* -----------------------------
                SETTERS
     ----------------------------- */
@@ -65,7 +61,7 @@ export default class CombatActor {
     ----------------------------- */
 
     makeGameTick(): boolean {
-        const speed = this.actor.getStat(StatTypeEnum.Speed)
+        const speed = this.actor.stats.getStatValue(StatTypeEnum.Speed)
         this.waitTime = this.waitTime = speed
         if ( this.waitTime <= 0 ) {
             return true
@@ -74,14 +70,38 @@ export default class CombatActor {
         }
     }
 
+    updateStance(): void {
+        //if the actor can select a stance
+        //check the combat object for a declared stance
+        //if declared stance is found, apply it to this actor
+    }
+
+    updateAction(): void {
+        //if the actor can declare an action intent
+        //check the combat object for a declared action
+        //if declared stance is found, apply it to this actor
+        //if there was a declared stance applied but the player has unassigned it,
+        //clear the stored action
+    }
+
+    takeAction(): void {
+        const action = this.action as CombatAction
+        if ( action.isAttack() ) {
+            const attack = new CombatAttack(action) //the constructor takes the action and determines all the random elements
+            attack.perform()
+        }
+        
+        this.resetWaitTime()
+    }
+
     resetWaitTime(): void {
         const action = this.getAction()
         const waitTime = action.getWaitTime()
         this.waitTime = waitTime
     }
     
-    applyDamage( damage: { quantity: number, type: damageType } ): void {
-        
+    applyDamage( damage: damageQuant ): void {
+        this.actor.stats.applyDamage(damage)
     }
     
 }

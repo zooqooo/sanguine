@@ -83,7 +83,7 @@ export default class ActorStat {
               GAME LOGIC
     ----------------------------- */
 
-    update(): void {
+    update(): StatBonus[] {
         this.bonuses = new Array<StatBonus>()
         this.actor.getSources().forEach( (e) => {
             e.getBonuses().forEach( (b) => {
@@ -93,6 +93,7 @@ export default class ActorStat {
                 }
             })
         })
+        return this.bonuses
     }
 
     private checkBonusLegality(b: StatBonus): void {

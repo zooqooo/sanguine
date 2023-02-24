@@ -26,7 +26,7 @@ export default class Inventory {
             GAME LOGIC
     ----------------------------- */
 
-    addItem(item: Item) : Inventory {
+    add(item: Item) : Inventory {
         if (!this.items.has(item.getID())) {
             this.items.set(item.getID(), new Item({ id: item.getID(), quantity: item.getQuantity()}))
             return this
@@ -34,6 +34,13 @@ export default class Inventory {
 
         let inventoryItem = this.items.get(item.getID())
         inventoryItem?.addQuantity(item.getQuantity())
+        return this
+    }
+
+    addMultiple(items: Item[]) : Inventory {
+        items.forEach( (item) => {
+            this.add(item)
+        })
         return this
     }
 
