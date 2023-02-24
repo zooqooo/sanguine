@@ -39,6 +39,10 @@ export default class ActorStats {
     getStatValue(name: StatTypeEnum, damageType?: damageType): number {
         return this.getStat(name).get(damageType)
     }
+
+    getInstantStatValue(name: StatTypeEnum, bonuses: StatBonus[], damageType?: damageType): number {
+        return this.getStat(name).getInstant(bonuses, damageType)
+    }
     
     getStatValues(): Map<string, number> {
         let values = new Map<string, number>()
@@ -58,10 +62,6 @@ export default class ActorStats {
             values.push(e.getName())
         })
         return values
-    }
-
-    getStatBonusQuants(name: StatTypeEnum): StatBonus[] {
-        return this.getStat(name).update()
     }
 
     getSources(): Map<string, BonusSource> {

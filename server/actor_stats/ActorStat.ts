@@ -54,7 +54,26 @@ export default class ActorStat {
     }
 
     get(damageType? : damageType) : number {
-        return this.determine(damageType)
+        if ( this.isStatic() ) return this.statQuantity
+        if ( this.statInfo.damageTyped && typeof damageType == 'undefined' ) throw new Error(`Stat ${this.getName()} is damage typed, it's value cannot be determined without a damage type context`)
+
+        return this.determine(this.bonuses, damageType)
+    }
+
+    getInstant(extraBonuses: StatBonus[], damageType?: damageType) {
+        if ( this.isStatic() ) return this.statQuantity
+        if ( this.statInfo.damageTyped && typeof damageType == 'undefined' ) throw new Error(`Stat ${this.getName()} is damage typed, it's value cannot be determined without a damage type context`)
+
+        let filteredBonuses = new Array<StatBonus>()
+        for ( const bonus of extraBonuses ) {
+            if ( bonus.getStat() == this.name ) {
+                this.checkBonusLegality(bonus)
+                filteredBonuses.push(bonus)
+            }
+        }
+        const combinedBonuses = filteredBonuses.concat(this.bonuses)
+
+        return this.determine(combinedBonuses, damageType)
     }
 
     isStatic() : boolean {
@@ -106,13 +125,11 @@ export default class ActorStat {
         if ( this.statInfo.damageTyped && !b.hasDamageType() ) throw new Error(`Stat ${this.getName()} is damage typed. But bonus ${b.getSourceName()} has no damage type`)
     }
     
-    private determine(damageType? : damageType): number {
-        if ( this.isStatic() ) return this.statQuantity
-        if ( this.statInfo.damageTyped && typeof damageType == 'undefined' ) throw new Error(`Stat ${this.getName()} is damage typed, it's value cannot be determined without a damage type context`)
+    private determine(bonuses: StatBonus[], damageType? : damageType): number {
         if ( this.statInfo.stacking == StatStackingTypeEnum.Arithmetic ) {
-            return this.applyArithmeticBonuses(damageType)        
+            return this.applyArithmeticBonuses(bonuses, damageType)        
         } else if ( this.statInfo.stacking == StatStackingTypeEnum.Further ) {
-            return this.applyFurtherBonuses(damageType)        
+            return this.applyFurtherBonuses(bonuses, damageType)        
         } else {
             return this.statQuantity
         }
@@ -128,12 +145,12 @@ export default class ActorStat {
         return quant
     }
 
-    private applyArithmeticBonuses(damageType? : damageType): number {
+    private applyArithmeticBonuses(bonuses: StatBonus[], damageType? : damageType): number {
         let addModifiers = 0
         let totalIncrease = 1
         let totalMore = 1
 
-        for ( const bonus of this.bonuses ) {
+        for ( const bonus of bonuses ) {
             if ( bonus.compareDamageContext(damageType) ) {
                 if ( bonus.getQuantType() == QuantTypeEnum.Add ) {
                     addModifiers = addModifiers + this.determineBonus(bonus)
@@ -155,9 +172,9 @@ export default class ActorStat {
         return tempQuant
     }
 
-	private applyFurtherBonuses(damageType? : damageType): number {
+	private applyFurtherBonuses(bonuses: StatBonus[], damageType? : damageType): number {
         let quant = 1
-        for ( const bonus of this.bonuses ) {
+        for ( const bonus of bonuses ) {
             if ( bonus.compareDamageContext(damageType) ) {
                 let inverse = 1 - this.determineBonus(bonus)
                 quant = quant * inverse

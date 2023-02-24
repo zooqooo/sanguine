@@ -1,7 +1,8 @@
-import StatBonus from "../actor_stats/StatBonus"
 import { DamageBaseTypeEnum, damageQuant, DamageSuperTypeEnum, damageType, StatTypeEnum } from "../_types/StatTypes"
 import CombatAction from "./CombatAction"
 import CombatActor from "./CombatActor"
+
+var beta = require( '@stdlib/random-base-beta' )
 
 export default class CombatAttack {
     private attacker: CombatActor
@@ -16,9 +17,6 @@ export default class CombatAttack {
         this.defenders = new Array<CombatActor>()
         this.damages = new Array<damageQuant>()
 
-        this.accuracy = 1
-        this.crit = false
-
         // assert that no universal types appear in the damage types. Those types are only for defensive stats and for bonuses that apply to
         // multiple types the final attack must be of a specific type. So no DamageSuperTypeEnum.All or DamageBaseTypeEnum.Elemental etc.
         for ( const damage of this.damages ) {
@@ -26,62 +24,83 @@ export default class CombatAttack {
         }
 
         //   if there are any on-crit, pre-hit, or on-hit effects, they need to be stored to be retrieved by the combat class
-
+        
         //   determine the accuracy
-        this.attacker.stats.getStatBonusQuants(StatTypeEnum.Accuracy)
+        this.accuracy = this.attacker.stats.getInstantStatValue(StatTypeEnum.Accuracy, [])
         
         //   determine the crit chance
-        this.attacker.stats.getStatBonusQuants(StatTypeEnum.Critical_Chance)
+        this.attacker.stats.getInstantStatValue(StatTypeEnum.Critical_Chance, [])
         // once crit chance is calculated, the crit can be rolled immediatly
+        this.crit = false
 
-        //   determine the advantage and disadvantage
-        const advantage = this.calculateBonusArrays(this.attacker.stats.getStatBonusQuants(StatTypeEnum.Advantage))
-        const disadvantage = this.calculateBonusArrays(this.attacker.stats.getStatBonusQuants(StatTypeEnum.Disadvantage))
-        // then determine the alpha and beta values from the advantage and disadvantage
-        const [alpha, beta] = this.calculateAlphaBeta(advantage - disadvantage)
-        
-        //   determine max damage
-        // if max damage is reduced, it may need to move the min damage as well
-        this.attacker.stats.getStatBonusQuants(StatTypeEnum.Max_Damage)
-        
-        //   roll damage
-        // with all of those values in place, rolling damage can be done at this step
-        
+        const damages: { rangeMin: number, rangeMax: number, damageType: damageType }[] = []
+        for ( const damage of damages ) {
+            this.damages.push(this.calculateRawDamageQuant(damage))
+        }
+
         //   add crit damage
         // if the attack was a crit, the additional crit damage needs to be added into the raw damage array
-        this.attacker.stats.getStatBonusQuants(StatTypeEnum.Critical_Stamina_Damage)
-        this.attacker.stats.getStatBonusQuants(StatTypeEnum.Critical_Tension_Damage)
-        
-        //   determine bonus damage (as above)
-        // bonus damage applies to raw damage, so once it is calculated, multply the appropriate damage values and store them in the array
-        this.attacker.stats.getStatBonusQuants(StatTypeEnum.Bonus_Damage)
+        if ( this.crit ) {
+            this.attacker.stats.getInstantStatValue(StatTypeEnum.Critical_Stamina_Damage, [])
+            this.attacker.stats.getInstantStatValue(StatTypeEnum.Critical_Tension_Damage, [])
+            // find applicable stamina damages and create new crit quants
+            // find applicable tension damages and create new crit quants
+            this.damages.push( { quantity: 1, type: { baseType: DamageBaseTypeEnum.Crit, superType: DamageSuperTypeEnum.Stamina } } )
+            this.damages.push( { quantity: 1, type: { baseType: DamageBaseTypeEnum.Crit, superType: DamageSuperTypeEnum.Tension } } )
+        }
     }
 
     private checkForUniversalTypes(type: damageType): void {
         const forbiddenBaseTypes: DamageBaseTypeEnum[] = [DamageBaseTypeEnum.All, DamageBaseTypeEnum.Physical, DamageBaseTypeEnum.Elemental, DamageBaseTypeEnum.Special]
         const forbiddenSuperTypes: DamageSuperTypeEnum[] = [DamageSuperTypeEnum.All]
 
-        for ( const forbiddenType of forbiddenBaseTypes ) {
-            if ( type.baseType == forbiddenType ) throw new Error(`Forbidden damage type ${DamageBaseTypeEnum[forbiddenType]} found on attack`)
+        if ( forbiddenBaseTypes.includes(type.baseType) ) {
+            throw new Error(`Forbidden damage type ${DamageBaseTypeEnum[type.baseType]} found on attack`)
         }
 
-        for ( const forbiddenType of forbiddenSuperTypes ) {
-            if ( type.superType == forbiddenType ) throw new Error(`Forbidden damage type ${DamageSuperTypeEnum[forbiddenType]} found on attack`)
+        if ( forbiddenSuperTypes.includes(type.superType) ) {
+            throw new Error(`Forbidden damage type ${DamageBaseTypeEnum[type.superType]} found on attack`)
         }
     }
 
-    private calculateBonusArrays(bonuses: StatBonus[]): number {
-        return 0
-    }
-
-    private calculateAlphaBeta( delta: number ): [number, number] {
-        if ( delta == 0 ) {
-            return [2, 2]
-        } else if ( delta > 0 ) {
-            return [1+delta, 1]
+    private calculateRawDamageQuant(damage: { rangeMin: number, rangeMax: number, damageType: damageType }): damageQuant {
+        //   determine max damage
+        const max_damage = this.attacker.stats.getInstantStatValue(StatTypeEnum.Max_Damage, [], damage.damageType)
+        
+        let rolledDamage = 0
+        if ( max_damage <= damage.rangeMin ) {
+            rolledDamage = max_damage
         } else {
-            return [1, 1+Math.abs(delta)]
+            const advantage = this.attacker.stats.getInstantStatValue(StatTypeEnum.Advantage, [], damage.damageType)
+            const disadvantage = this.attacker.stats.getInstantStatValue(StatTypeEnum.Disadvantage, [], damage.damageType)
+            const randomV = this.calculateAlphaBeta(advantage - disadvantage)
+            rolledDamage = Math.floor(randomV * (max_damage - damage.rangeMin + 1) + damage.rangeMin)
         }
+        
+        //   determine bonus damage
+        // bonus damage applies to raw damage, so once it is calculated, multply the appropriate damage values and store them in the array
+        // the final damage can be calculated in this step by taking the base damage calculated by the earlier steps and passing it into
+        // the function as an additional StatBonus
+        const quantity = this.attacker.stats.getInstantStatValue(StatTypeEnum.Bonus_Damage, [], damage.damageType)
+
+        return {quantity: quantity, type: damage.damageType}
+    }
+
+    private calculateAlphaBeta( delta: number ): number {
+        let alphaV = 0
+        let betaV = 0
+        if ( delta == 0 ) {
+            alphaV = 2
+            betaV = 2
+        } else if ( delta > 0 ) {
+            alphaV = 1+delta
+            betaV = 1
+        } else {
+            alphaV = 1
+            betaV = 1+Math.abs(delta)
+        }
+
+        return beta( alphaV, betaV )
     }
 
     perform(): void {

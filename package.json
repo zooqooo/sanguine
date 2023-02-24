@@ -24,6 +24,7 @@
 		"vitest": "^0.28.5"
 	},
 	"dependencies": {
+		"@stdlib/random-base-beta": "^0.0.7",
 		"localforage": "^1.10.0",
 		"phaser": "^3.55.2",
 		"phaser3-rex-plugins": "^1.1.79",
