@@ -57,14 +57,14 @@ export default class SanguineGameMediator {
 
     }
 
-    static getInstance() {
+    static getInstance(): SanguineGameMediator {
         if (typeof instance == "undefined") {
             instance = new SanguineGameMediator()
         }
         return instance
     }
 
-    createGame(serializer: Serializer) {
+    createGame(serializer: Serializer): SanguineGame {
         let game = new SanguineGame(serializer)
         this.games.push(game)
         return game

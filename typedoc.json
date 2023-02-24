@@ -1,0 +1,15 @@
+{
+    "entryPoints": ["./server"],
+    "entryPointStrategy": "expand",
+    "out": "docs",
+    "plugin": [
+        // "typedoc-umlclass",
+        "typedoc-plugin-rename-defaults",
+        "typedoc-plugin-markdown"
+    ],
+    // "umlClassDiagram": {
+    //     "type": "detailed",
+    //     "location": "local",
+    //     "format": "png"
+    // }
+}

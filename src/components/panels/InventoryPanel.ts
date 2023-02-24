@@ -1,9 +1,8 @@
 import Container from 'phaser3-rex-plugins/templates/ui/container/Container'
 import FixWidthSizer from 'phaser3-rex-plugins/templates/ui/fixwidthsizer/FixWidthSizer'
-import { inventory, inventoryItem } from '../../Types'
 import InventoryItem from '../game_components/InventoryItem'
-import ExpolorationScene, { UIItem } from '../../scenes/ExplorationScene'
-import { serializedItem } from '../../logic/Item'
+import ExpolorationScene from '../../scenes/ExplorationScene'
+import { transitItem } from '../../../server/_types/TransitTypes'
 
 type inventoryPanelStyle = {
     x: number,
@@ -60,7 +59,7 @@ export default class InventoryPanel extends Container {
             SET GAME STATE
     ----------------------------- */
 
-    fillGrid(items: UIItem[]) {
+    fillGrid(items: transitItem[]) {
         if ( typeof items.length == 'undefined' || items.length < 1 ) return this.sizer
         this.sizer.clear(true)
         items.forEach((item) => {            
