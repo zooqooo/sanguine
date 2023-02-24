@@ -39,6 +39,7 @@ export default class CombatActor {
     }
     
     hasActionReady(): boolean {
+        this.updateAction()
         //returns true if the player/AI has an action declared
         //returns false if this.action is undefined
         return false
@@ -61,6 +62,9 @@ export default class CombatActor {
     ----------------------------- */
 
     makeGameTick(): boolean {
+        // this needs to be able to handle lag time in addition to wait time
+        // if they are in lag time, and it decrements to 0, a flag needs to be flipped in the action
+        // to mark that the character is ready to act
         const speed = this.actor.stats.getStatValue(StatTypeEnum.Speed)
         this.waitTime = this.waitTime = speed
         if ( this.waitTime <= 0 ) {
@@ -82,16 +86,23 @@ export default class CombatActor {
         //if declared stance is found, apply it to this actor
         //if there was a declared stance applied but the player has unassigned it,
         //clear the stored action
+        //all using the set and reset action methods in this class
     }
 
     takeAction(): void {
+        if ( !this.hasActionReady() ) {
+            return
+        }
         const action = this.action as CombatAction
+        // if the action has lag time and isn't flagged as ready to go
+        // set the character's lag time to the action's lag time and return
         if ( action.isAttack() ) {
-            const attack = new CombatAttack(action) //the constructor takes the action and determines all the random elements
+            const attack = new CombatAttack(this, action) //the constructor takes the action and determines all the random elements
             attack.perform()
         }
         
         this.resetWaitTime()
+        this.resetAction()
     }
 
     resetWaitTime(): void {
