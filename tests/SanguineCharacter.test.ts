@@ -43,7 +43,7 @@ describe('Construct dummy character', () => {
     expect(character.inventory).to.deep.equal(new Inventory())
 
     let mockStats = new ActorStats()
-    mockStats.addSource(new BonusSource("Sanguine Hero"))
+    mockStats.addSource(BonusSource.fromName("Sanguine Hero"))
 
     expect(character.stats.getStatValues()).to.deep.equal(mockStats.getStatValues())
   })
@@ -87,12 +87,12 @@ describe('Stat bonus sources should be able to be added and removed from a chara
   it('Add and remove bonus sources', () => {
     let character = new SanguineCharacter(DUMMY_CHARACTER_1)
     expect(character.stats.getStatValues()).to.deep.equal(new ActorStats().getStatValues())
-    character.stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[0]))
-    character.stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[1]))
+    character.stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[0]))
+    character.stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[1]))
     expect(character.stats.getStatValue(StatTypeEnum.Vigor)).to.deep.equal(4)
     expect(character.stats.getStatValue(StatTypeEnum.Grit)).to.deep.equal(2)
     expect(character.stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(3)
-    character.stats.removeSource(new BonusSource(MOCK_BONUS_SOURCES[1]))
+    character.stats.removeSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[1]))
     expect(character.stats.getStatValue(StatTypeEnum.Vigor)).to.deep.equal(4)
     expect(character.stats.getStatValue(StatTypeEnum.Grit)).to.deep.equal(2)
     expect(character.stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(0)

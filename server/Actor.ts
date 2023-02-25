@@ -27,7 +27,7 @@ export default class SanguineActor {
 
         if (typeof params.bonusSources !== 'undefined') {
             params.bonusSources.forEach( (e) => {
-                this.stats.addSource(new BonusSource(e))
+                this.stats.addSource(BonusSource.fromName(e))
             })
         }
     }

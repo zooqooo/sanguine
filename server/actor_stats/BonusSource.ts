@@ -2,25 +2,34 @@ import SanguineGameMediator from "../GameMediator"
 import { dbBonusSource } from "../_types/DBTypes"
 import StatBonus from "./StatBonus"
 
-export default class BounusSource {
-    private name: string
-    private statBonuses: StatBonus[]
+export default class BonusSource {
+    private name!: string
+    private statBonuses!: StatBonus[]
 
-    constructor(name: string | dbBonusSource) {
-        let bonusSourceInfo: dbBonusSource | undefined
-        if ( typeof name == 'string' ) {
-            let mediator = SanguineGameMediator.getInstance()
-            bonusSourceInfo = mediator.getBonusSourceData(name as string)
-            if ( typeof bonusSourceInfo == 'undefined') throw new Error(`Bonus Source info not found for ${name}`)
-        } else {
-            bonusSourceInfo = name as dbBonusSource
-        }
-        
+    static fromName(name: string): BonusSource {
+        const mediator = SanguineGameMediator.getInstance()
+        const bonusSourceInfo = mediator.getBonusSourceData(name as string)
+        if ( typeof bonusSourceInfo == 'undefined') throw new Error(`Bonus Source info not found for ${name}`)
+
+        const source = new BonusSource()
+        source.setBonusInfo(bonusSourceInfo)
+        return source
+    }
+
+    static fromSerial(bonusSourceInfo: dbBonusSource) {
+        const source = new BonusSource()
+        source.setBonusInfo(bonusSourceInfo)
+        return source
+    }
+
+    setBonusInfo(bonusSourceInfo: dbBonusSource) {
         this.statBonuses = new Array<StatBonus>()
         this.name = bonusSourceInfo.name
-        bonusSourceInfo.statBonuses.forEach( (b) => {
-            this.statBonuses.push(new StatBonus(this, b))
-        })
+        for ( const bonusComponent of bonusSourceInfo.bonuses ) {
+            for ( const statBonus of bonusComponent.stats ) {
+                this.statBonuses.push(new StatBonus(this, statBonus))
+            }
+        }
     }
     
     /* -----------------------------

@@ -16,7 +16,7 @@ describe('ActorStats getters', () => {
 
     it('getStatValues', () => {
         let stats = new ActorStats([StatTypeEnum.Vigor, StatTypeEnum.Grit])
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[0])) //Add 4 Vigor, 2 Grit
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[0])) //Add 4 Vigor, 2 Grit
         let values = new Map<string, number>()
         values.set('Vigor', 4)
         values.set('Grit', 2)
@@ -34,27 +34,27 @@ describe('ActorStats getters', () => {
 
     it('getStatQuant', () => {
         let stats = new ActorStats([StatTypeEnum.Vigor, StatTypeEnum.Grit])
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[0])) //Add 4 Vigor, 2 Grit
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[0])) //Add 4 Vigor, 2 Grit
         expect(stats.getStatValue(StatTypeEnum.Vigor)).to.deep.equal(4)
     })
 
     it('getStatQuant (with damage type)', () => {
         let stats = new ActorStats([StatTypeEnum.Protection])
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[25])) //+10% Fire Protection
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[25])) //+10% Fire Protection
         expect(stats.getStatValue(StatTypeEnum.Protection, { baseType: DamageBaseTypeEnum.Fire, superType: DamageSuperTypeEnum.Stamina })).to.deep.equal(.1)
     })
 
     it('getStatQuant (without damage type)', () => {
         let stats = new ActorStats([StatTypeEnum.Protection])
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[25])) //+10% Fire Protection
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[25])) //+10% Fire Protection
         expect(() => stats.getStatValue(StatTypeEnum.Protection)).toThrowError('is damage typed')
     })
 
     it('getSources', () => {
         let stats = new ActorStats([StatTypeEnum.Vigor, StatTypeEnum.Grit])
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[0])) //Add 4 Vigor, 2 Grit
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[0])) //Add 4 Vigor, 2 Grit
         let values = new Map<string, BonusSource>()
-        let testSource = new BonusSource(MOCK_BONUS_SOURCES[0])
+        let testSource = BonusSource.fromSerial(MOCK_BONUS_SOURCES[0])
         values.set(testSource.getID(), testSource)
         expect(stats.getSources()).to.deep.equal(values)
     })
@@ -63,52 +63,52 @@ describe('ActorStats getters', () => {
 describe('Bonuses should be applied according to the rules', () => {
     it('Add quant type should add values', () => {
         let stats = new ActorStats([StatTypeEnum.Tenacity])
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[1])) // Add 3 Tenacity
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[1])) // Add 3 Tenacity
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(3)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[2])) // Add 5 Tenacity
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[2])) // Add 5 Tenacity
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(8)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[3])) // Subtract 4 Tenacity
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[3])) // Subtract 4 Tenacity
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(4)
     })
 
     it('Increase quant type should multiply values with additive stacking', () => {
         let stats = new ActorStats([StatTypeEnum.Tenacity])
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[1])) // Add 3 Tenacity
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[1])) // Add 3 Tenacity
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(3)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[4])) // Increase Tenacity 50%
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[4])) // Increase Tenacity 50%
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(4.5)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[5])) // Increase Tenacity 200%
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[5])) // Increase Tenacity 200%
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(10.5)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[6])) // Decrease Tenacity 75% 
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[6])) // Decrease Tenacity 75% 
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(8.25)
     })
 
     it('More quant type should multiply values with multiplicitive stacking', () => {
         let stats = new ActorStats([StatTypeEnum.Tenacity])
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[1]))
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[1]))
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(3)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[7])) // 50% more Tenacity 
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[7])) // 50% more Tenacity 
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(4.5)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[8])) // 200% more Tenacity 
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[8])) // 200% more Tenacity 
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(13.5)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[9])) // 75% less Tenacity 
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[9])) // 75% less Tenacity 
         expect(stats.getStatValue(StatTypeEnum.Tenacity)).to.deep.equal(3.375)
     })
 
     it('Further quant type should geometrically combine values', () => {
         let stats = new ActorStats([StatTypeEnum.TEST_FURTHER])
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[10])) // 10% Further TEST_FURTHER
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[10])) // 10% Further TEST_FURTHER
         expect(stats.getStatValue(StatTypeEnum.TEST_FURTHER)).toBeCloseTo(.1,4)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[11])) // 30% Further TEST_FURTHER
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[11])) // 30% Further TEST_FURTHER
         expect(stats.getStatValue(StatTypeEnum.TEST_FURTHER)).toBeCloseTo(.37,4)
     })
 
     it('Stats with min or max defined should clamp final values', () => {
         let stats = new ActorStats([StatTypeEnum.TEST_MIN_MAX_LINEAR]) //Max of 1, Min of -2
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[20])) // +2
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[20])) // +2
         expect(stats.getStatValue(StatTypeEnum.TEST_MIN_MAX_LINEAR)).to.deep.equal(1)
         stats = new ActorStats([StatTypeEnum.TEST_MIN_MAX_LINEAR]) //Max of 1, Min of -2
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[21])) // -4
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[21])) // -4
         expect(stats.getStatValue(StatTypeEnum.TEST_MIN_MAX_LINEAR)).to.deep.equal(-2)
     })
 })
@@ -116,40 +116,40 @@ describe('Bonuses should be applied according to the rules', () => {
 describe('Stats object should be throw exceptions when invalid combinations of bonuses are present', () => {
     it('Arithmetic stats can only accept arithmetic bonuses', () => {
         let stats = new ActorStats([StatTypeEnum.TEST_POSITIVE_LINEAR])
-        let bonus = new BonusSource(MOCK_BONUS_SOURCES[19]) // 80% Further TEST_POSITIVE_LINEAR
+        let bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[19]) // 80% Further TEST_POSITIVE_LINEAR
         expect(() => stats.addSource(bonus)).toThrowError('is typed arithmetic')
     })
 
     it('Further stats can only accept further bonuses', () => {
         let stats = new ActorStats([StatTypeEnum.TEST_FURTHER])
-        let bonus = new BonusSource(MOCK_BONUS_SOURCES[14]) // +10% TEST_FURTHER
+        let bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[14]) // +10% TEST_FURTHER
         expect(() => stats.addSource(bonus)).toThrowError('is typed further')
     })
 
     it('Further quant type should reject values not between 0 and 1', () => {
         let stats = new ActorStats([StatTypeEnum.TEST_FURTHER])
-        let bonus = new BonusSource(MOCK_BONUS_SOURCES[12]) // -80% Further TEST_FURTHER
+        let bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[12]) // -80% Further TEST_FURTHER
         expect(() => stats.addSource(bonus)).toThrowError('Further Bonus Error')
         stats = new ActorStats([StatTypeEnum.TEST_FURTHER])
-        bonus = new BonusSource(MOCK_BONUS_SOURCES[13]) // 120% Further TEST_FURTHER
+        bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[13]) // 120% Further TEST_FURTHER
         expect(() => stats.addSource(bonus)).toThrowError('Further Bonus Error')
     })
 
     it('Stats with the no penalty trait should reject negative values', () => {
         let stats = new ActorStats([StatTypeEnum.TEST_POSITIVE_LINEAR])
-        let bonus = new BonusSource(MOCK_BONUS_SOURCES[16]) // -5 TEST_POSITIVE_LINEAR
+        let bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[16]) // -5 TEST_POSITIVE_LINEAR
         expect(() => stats.addSource(bonus)).toThrowError('does not allow penalties')
     })
 
     it('Stats with the linear only trait should reject geometric bonuses', () => {
         let stats = new ActorStats([StatTypeEnum.TEST_POSITIVE_LINEAR])
-        let bonus = new BonusSource(MOCK_BONUS_SOURCES[17]) // 50% Increased TEST_POSITIVE_LINEAR
+        let bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[17]) // 50% Increased TEST_POSITIVE_LINEAR
         expect(() => stats.addSource(bonus)).toThrowError('is linear only')
         stats = new ActorStats([StatTypeEnum.TEST_POSITIVE_LINEAR])
-        bonus = new BonusSource(MOCK_BONUS_SOURCES[18]) // 80% More TEST_POSITIVE_LINEAR
+        bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[18]) // 80% More TEST_POSITIVE_LINEAR
         expect(() => stats.addSource(bonus)).toThrowError('is linear only')
         stats = new ActorStats([StatTypeEnum.TEST_POSITIVE_LINEAR])
-        bonus = new BonusSource(MOCK_BONUS_SOURCES[19]) // 80% Further TEST_POSITIVE_LINEAR
+        bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[19]) // 80% Further TEST_POSITIVE_LINEAR
         expect(() => stats.addSource(bonus)).toThrowError('is typed arithmetic')
     })
 })
@@ -185,11 +185,11 @@ describe('Static stats should be updated properly', () => {
     it('Check speed', () => {
         let stats = new ActorStats()
         expect(stats.getStatValue(StatTypeEnum.Speed)).toBeCloseTo(0,2)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[22])) // +2 Agility, +2 Alacrity
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[22])) // +2 Agility, +2 Alacrity
         expect(stats.getStatValue(StatTypeEnum.Speed)).toBeCloseTo(1.24,2)
-        stats.addSource(new BonusSource(MOCK_BONUS_SOURCES[23])) // +5 Agility, -2 Alacrity
+        stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[23])) // +5 Agility, -2 Alacrity
         expect(stats.getStatValue(StatTypeEnum.Speed)).toBeCloseTo(1.83,2)
-        let bonus = new BonusSource(MOCK_BONUS_SOURCES[24]) // +2 Speed
+        let bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[24]) // +2 Speed
         expect(() => stats.addSource(bonus)).toThrowError('does not allow modification')
     })
 })
@@ -197,7 +197,7 @@ describe('Static stats should be updated properly', () => {
 describe('Stats with damage types should be updated properly', () => {
     it('Untyped bonuses shouldnt apply to typed stats', () => {
         let stats = new ActorStats([StatTypeEnum.Protection])
-        let bonus = new BonusSource(MOCK_BONUS_SOURCES[26]) //+10% Undefined Protection
+        let bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[26]) //+10% Undefined Protection
         expect(() => stats.addSource(bonus)).toThrowError('is damage typed')
     })
 })

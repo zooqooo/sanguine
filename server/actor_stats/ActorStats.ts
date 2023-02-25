@@ -100,7 +100,7 @@ export default class ActorStats {
     }
 
     addSourceByName(source: string): void {
-        this.addSource(new BonusSource(source))
+        this.addSource(BonusSource.fromName(source))
     }
 
     addMultipleSourcesByName(sources: string[]): void {
@@ -116,7 +116,7 @@ export default class ActorStats {
     }
 
     removeSourceByName(source: string): void {
-        this.removeSource(new BonusSource(source))
+        this.removeSource(BonusSource.fromName(source))
     }
 
     removeMultipleBonusSourcesByName(sources: string[]): void {

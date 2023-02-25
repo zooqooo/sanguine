@@ -1,4 +1,4 @@
-import BounusSource from "./BonusSource"
+import BonusSource from "./BonusSource"
 
 export default class ActorInitializer {
     private weaponChoiceIndexes = ["Hammer Anima", "Axe Anima", "Spear Anima"]
@@ -21,11 +21,11 @@ export default class ActorInitializer {
         return this.classChoiceIndexes
     }
 
-    getWeaponChoice( index: number ): BounusSource {
-        return new BounusSource(this.weaponChoiceIndexes[index])
+    getWeaponChoice( index: number ): BonusSource {
+        return BonusSource.fromName(this.weaponChoiceIndexes[index])
     }
 
-    getClassChoice( index: number ): BounusSource {
-        return new BounusSource(this.classChoiceIndexes[index])
+    getClassChoice( index: number ): BonusSource {
+        return BonusSource.fromName(this.classChoiceIndexes[index])
     }
 }

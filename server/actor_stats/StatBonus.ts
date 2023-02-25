@@ -1,5 +1,5 @@
 import { DamageBaseTypeEnum, DamageSuperTypeEnum, damageType, QuantTypeEnum, StatTypeEnum } from "../_types/StatTypes"
-import BounusSource from "./BonusSource"
+import BonusSource from "./BonusSource"
 
 export type serializedStatBonus = {
     stat: StatTypeEnum,
@@ -10,14 +10,14 @@ export type serializedStatBonus = {
 }
 
 export default class StatBonus {
-    private source: BounusSource
+    private source: BonusSource
     private stat: StatTypeEnum
     private quantity: number
     private quantType: QuantTypeEnum
     private quantMult: StatTypeEnum
     private damageType?: damageType
 
-    constructor(source: BounusSource, config: serializedStatBonus) {
+    constructor(source: BonusSource, config: serializedStatBonus) {
         this.source = source
         this.stat = config.stat
         this.quantity = config.quantity

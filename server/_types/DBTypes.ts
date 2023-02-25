@@ -31,5 +31,9 @@ export type dbTile = {
 
 export type dbBonusSource = {
     name: string,
-    statBonuses: serializedStatBonus[]
+    bonuses: dbBonusComponent[]
+}
+
+export type dbBonusComponent = {
+    stats: serializedStatBonus[]
 }
