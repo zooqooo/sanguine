@@ -6,7 +6,7 @@ export type player = {
     name: string,
     password: string,
     maxCharacters: number,
-    saves: serializedGame[]
+    saves: string[]
 }
 
 const DUMMY_REGION: serializedTile[]  = [
@@ -24,30 +24,9 @@ const TEST_PLAYER: player = {
     password: 'test',
     maxCharacters: 10,
     saves: [
-        {
-            character: {
-                name: 'Dick',
-                location: 0,
-                initialized: false
-            },
-            region: DUMMY_REGION
-        },
-        {
-            character: {
-                name: 'Tim',
-                location: 0,
-                initialized: false
-            },
-            region: DUMMY_REGION
-        },
-        {
-            character: {
-                name: 'Jason',
-                location: 0,
-                initialized: false
-            },
-            region: DUMMY_REGION
-        }
+        "Dick",
+        "Tim",
+        "Jason"
     ]
 }
 

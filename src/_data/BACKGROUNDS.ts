@@ -1,6 +1,5 @@
+import { UIImage } from "../utils/UITypes"
 import { CST } from "./CST"
-
-export type UIImage = string
 
 export type dbImage = {
     name: string,

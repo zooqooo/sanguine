@@ -1,12 +1,11 @@
 import Serializer from './Serializer'
 
 import SanguineCharacter from "./Character"
-import Inventory from './inventory/Inventory'
 import Region from "./locations/Region"
 import Tile from './locations/Tile'
+import Item from './inventory/Item'
 
 import { transitGame, transitItem, transitLocation } from './_types/TransitTypes'
-import Item from './inventory/Item'
 
 export default class SanguineGame {
     private serializer: Serializer
@@ -22,26 +21,16 @@ export default class SanguineGame {
         this.region = new Region(this.serializer.getSerializedRegion())
         this.location = this.region.characterLocation(this.character)
     }
-
-    /* -----------------------------
-                GETTERS
-    ----------------------------- */
-
-    getInventory() : Inventory {
-        return this.character.inventory
-    }
-
-    getRegionNames() : string[] {
-        return this.region.getNames()
-    }
-
-    /* -----------------------------
-              START GAME
-    ----------------------------- */
     
+    /* -----------------------------
+              GAME LOGIC
+    ----------------------------- */
+
     startGame(): {gameState: transitGame, regionNames: string[]} {
-        return { gameState: this.transit(), regionNames: this.getRegionNames() }
+        return { gameState: this.transit(), regionNames: this.region.getNames() }
     }
+
+    /* ----   RESPAWN    ---- */
 
     beginCharacterInitialize(): { classChoices: string[], weaponChoices: string [] } {
         return this.character.beginCharacterInitialize()
@@ -51,28 +40,8 @@ export default class SanguineGame {
         this.character.verifyCharacterInitialize(choices)
         return this.transit()
     }
-    
-    /* -----------------------------
-              GAME LOGIC
-    ----------------------------- */
 
-    gatherBounty(action: "Forage" | "Collect"): { drops: string, bounty: number, inventory: transitItem[] } {
-        let response: { drops: string, bounty: number, inventory: transitItem[] }
-        if ( this.location.getBounty() == 0 ) {
-            response = { drops: `This location has nothing left to gather.\r\nCome back later`, bounty: 0, inventory: this.getInventory().transit() }
-        } else {
-            const tileDrops : Item[] | string = this.location.forage(action)
-            if (typeof tileDrops! == 'string') {
-                response = { drops: tileDrops, bounty: this.location.getBounty(), inventory: this.getInventory().transit() }
-            } else {
-                //console.log(this.itemsToString(tileDrops, 'Found'))
-                let inventory = this.character.inventory.addMultiple(tileDrops).transit()
-                this.save()
-                response = { drops: Item.itemsToString(tileDrops, 'Found'), bounty: this.location.getBounty(), inventory: inventory }
-            }
-        }
-        return response
-    }
+    /* ----   MOVE    ---- */
 
     move(targetIndex: number): transitLocation | "Invalid Move" {     
         if ( this.region.isAdjacent(this.location.getID(), targetIndex) ) {
@@ -87,11 +56,25 @@ export default class SanguineGame {
         }
     }
 
-    /* -----------------------------
-            UTILITY METHODS
-    ----------------------------- */
+    /* ----   BOUNTY    ---- */
 
-
+    gatherBounty(action: "Forage" | "Collect"): { drops: string, bounty: number, inventory: transitItem[] } {
+        let response: { drops: string, bounty: number, inventory: transitItem[] }
+        if ( this.location.getBounty() == 0 ) {
+            response = { drops: `This location has nothing left to gather.\r\nCome back later`, bounty: 0, inventory: this.character.inventory.transit() }
+        } else {
+            const tileDrops : Item[] | string = this.location.forage(action)
+            if (typeof tileDrops! == 'string') {
+                response = { drops: tileDrops, bounty: this.location.getBounty(), inventory: this.character.inventory.transit() }
+            } else {
+                //console.log(this.itemsToString(tileDrops, 'Found'))
+                let inventory = this.character.inventory.addMultiple(tileDrops).transit()
+                this.save()
+                response = { drops: Item.itemsToString(tileDrops, 'Found'), bounty: this.location.getBounty(), inventory: inventory }
+            }
+        }
+        return response
+    }
 
     /* -----------------------------
                 SAVE
@@ -101,7 +84,7 @@ export default class SanguineGame {
         return {
             characterStatus: this.character.transit(),
             location: this.location.transit(),
-            inventory: this.getInventory().transit()
+            inventory: this.character.inventory.transit()
         }
     }
 

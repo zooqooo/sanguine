@@ -3,20 +3,19 @@ import localforage from "localforage"
 import SanguineCharacter, { serializedCharacter } from "./Character"
 import Region from "./locations/Region"
 import { serializedTile } from "./locations/Tile"
+import { DUMMY_SAVE } from "./_data/PLAYER_DATA"
 
 export type serializedGame = { character: serializedCharacter, region: serializedTile[] }
 
-const VERSION = `001`
+const VERSION = `003`
 
 export default class Serializer {
     private address: string
-    private character: serializedCharacter
-    private region: serializedTile[]
+    private character!: serializedCharacter
+    private region!: serializedTile[]
     
-    constructor(game: serializedGame) {
-        this.address = `SAVEV${VERSION}_${game.character.name}`
-        this.character = game.character
-        this.region = game.region
+    constructor(playerName: string, characterName: string) {
+        this.address = `SAVEV${VERSION}_${characterName}`
     }
 
      /* -----------------------------
@@ -24,6 +23,7 @@ export default class Serializer {
     ----------------------------- */
 
     getSerializedCharacter() : serializedCharacter {
+        
         return this.character
     }
 
@@ -54,18 +54,31 @@ export default class Serializer {
                 LOAD
     ----------------------------- */
 
-    async loadGame() {
-        //this.loadTestGame()
+    async loadTestGame() {
+        this.character = DUMMY_SAVE.character
+        this.region = DUMMY_SAVE.region
+        return this
+    }
 
+    async loadGame() {
         try {
             const value = await localforage.getItem(this.address) as serializedGame
             if ( value !== null ) {
                 console.log(value)
                 this.character = value.character
                 this.region = value.region
+            } else {
+                console.log(`loading dummy data`)
+                this.character = DUMMY_SAVE.character
+            this.region = DUMMY_SAVE.region
             }
         } catch (err) {
             console.log(err)
+            console.log(`loading dummy data`)
+            this.character = DUMMY_SAVE.character
+            this.region = DUMMY_SAVE.region
+        } finally {
+            return this
         }
     }
 }

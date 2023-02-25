@@ -1,7 +1,6 @@
 import EventDispatcher from "../utils/EventDispatcher"
 import UIScene from "../components/abstract_and_templates/UIScene"
 import OutboundRequests from "../utils/OutboundRequests"
-import Serializer from "../../server/Serializer"
 
 import { CST } from "../_data/CST"
 import { BLACKSTONE_PANEL, TABBED_CONTROLLER } from "../layouts/ExplorationLayout"
@@ -13,8 +12,7 @@ import LocationPanel from "../components/panels/LocationPanel"
 import BountyPanel from "../components/panels/BountyPanel"
 
 import Sizer from "phaser3-rex-plugins/templates/ui/sizer/Sizer"
-
-import { transitCharacter, transitGame, transitItem, transitLocation } from "../../server/_types/TransitTypes"
+import { UICharacter, UIGame, UIItem, UILocation } from "../utils/UITypes"
 
 const COLOR_PRIMARY = 0x4e342e
 const COLOR_LIGHT = 0x7b5e57
@@ -43,9 +41,9 @@ export default class ExpolorationScene extends UIScene {
              GAME STATE
     ----------------------------- */
 
-    private character!: transitCharacter
-    private location!: transitLocation
-    private inventory!: transitItem[]
+    private character!: UICharacter
+    private location!: UILocation
+    private inventory!: UIItem[]
     private regionNames!: string[]
 
     /* -----------------------------
@@ -58,11 +56,10 @@ export default class ExpolorationScene extends UIScene {
         })
     }
     
-    init(data: any) {
+    init(data: {outboundRequests: OutboundRequests}) {
         this.emitter = EventDispatcher.getInstance()
         this.modifierKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT)
-        let serializer = data as Serializer
-        this.sanguineGame = new OutboundRequests(serializer)
+        this.sanguineGame = data.outboundRequests
         this.moving = false
     }
 
@@ -167,7 +164,7 @@ export default class ExpolorationScene extends UIScene {
               GETTERS
     ----------------------------- */
 
-    getLocation(): transitLocation { 
+    getLocation(): UILocation { 
         return this.location
     }
 
@@ -179,7 +176,7 @@ export default class ExpolorationScene extends UIScene {
             INIT METHODS
     ----------------------------- */
 
-    setGameState(gameState: transitGame) {
+    setGameState(gameState: UIGame) {
         console.log(gameState)
         this.location = gameState.location
         this.character = gameState.characterStatus
@@ -194,7 +191,7 @@ export default class ExpolorationScene extends UIScene {
         this.initBountyUI()
     }
     
-    initUI(params: {gameState: transitGame, regionNames: string[]}) {
+    initUI(params: {gameState: UIGame, regionNames: string[]}) {
         this.regionNames = params.regionNames
         this.setGameState(params.gameState)
 
@@ -278,7 +275,7 @@ export default class ExpolorationScene extends UIScene {
 
     /* ----     MOVE     ---- */
 
-    move(targetLocation: transitLocation) {
+    move(targetLocation: UILocation) {
         this.location = targetLocation
         this.moveLocationMarker(targetLocation.index, 180)
         this.locationUI.transitBackground(targetLocation.background)
@@ -300,14 +297,14 @@ export default class ExpolorationScene extends UIScene {
 
     /* ----  INVENTORY   ---- */
 
-    updateInventory(inventory: transitItem[]) {
+    updateInventory(inventory: UIItem[]) {
         this.inventory = inventory
         this.inventoryUI.fillGrid(this.inventory).layout()
     }
 
     /* ----   GATHER     ---- */
 
-    gatherBounty(params: { drops: string, bounty: number, inventory: transitItem[] }) {
+    gatherBounty(params: { drops: string, bounty: number, inventory: UIItem[] }) {
         this.updateInventory(params.inventory)
         this.locationUI.createToast(params.drops)
         this.location.bounty = params.bounty

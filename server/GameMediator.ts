@@ -2,13 +2,14 @@ import { TILES } from "./_data/TILES_DATA"
 import { ITEMS } from "./_data/ITEMS_DATA"
 import { DAMAGE_ACCUMULATORS, STAT_TYPES } from "./_data/STAT_TYPES_DATA"
 import { BONUS_SOURCES } from "./_data/BONUS_SOURCES_DATA"
+import { PLAYERS } from "./_data/PLAYER_DATA"
 
-import { dbBonusSource, dbItem, dbTile, itemTypeEnum } from "./_types/DBTypes"
+import { dbBonusSource, dbItem, dbTile } from "./_types/DBTypes"
 import { damageAccumulatorInfo, DamageSuperTypeEnum, statInfo, StatTypeEnum } from "./_types/StatTypes"
-
-import SanguineGame from "./Game"
-import Serializer from "./Serializer"
 import { ItemFeature } from "./_types/ItemTypes"
+
+import Serializer from "./Serializer"
+import SanguineGame from "./Game"
 
 let instance: SanguineGameMediator
 
@@ -64,8 +65,46 @@ export default class SanguineGameMediator {
         return instance
     }
 
+    getCharactersFromPassword(password: string): { name: string, characterNames: string[] } | "Invalid Password" {
+        const players = PLAYERS
+
+        if (players[password] == null) {
+            return "Invalid Password"
+        } else {
+            const player = players[password]
+            const characters = []
+            for ( const character of player.saves ) {
+                characters.push(character)
+            }
+            return { name: player.name, characterNames: characters}
+        }
+    }
+
+    async createTestGame(): Promise<SanguineGame> {
+        let serializer = new Serializer("testDFGData", "testDFGData")
+        serializer = await serializer.loadTestGame()
+        return this.createGame(serializer)
+    }
+
+    async createGameFromCharacter(password: string, characterName: string): Promise<SanguineGame | "Invalid Password" | "Invalid Character"> {
+        const players = PLAYERS
+
+        if (players[password] == null) return "Invalid Password"
+
+        const player = players[password]
+        for ( const character of player.saves ) {
+            if ( character == characterName) {
+                let serializer = new Serializer(player.name, character)
+                serializer = await serializer.loadGame()
+                return this.createGame(serializer)
+            }
+        }
+        return "Invalid Character"
+    }
+
     createGame(serializer: Serializer): SanguineGame {
-        let game = new SanguineGame(serializer)
+        console.log(serializer)
+        const game = new SanguineGame(serializer)
         this.games.push(game)
         return game
     }

@@ -1,5 +1,5 @@
 import Toast from 'phaser3-rex-plugins/templates/ui/toast/Toast'
-import { transitItem } from '../../../server/_types/TransitTypes'
+import { UIItem } from '../../utils/UITypes'
 import UIScene from '../abstract_and_templates/UIScene'
 
 const COLOR_PRIMARY = 0x4e342e
@@ -34,7 +34,7 @@ export default class MyToast extends Toast {
         scene.add.existing(this)
     }
     
-    foundItems(items: transitItem[]) {
+    foundItems(items: UIItem[]) {
         items.forEach( (item) => {
             console.log(`toasting`)
             if ( item.quantity > 1 ) {

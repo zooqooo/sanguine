@@ -1,6 +1,7 @@
-import { BACKGROUNDS, UIImage } from "../_data/BACKGROUNDS"
 import { CST } from "../_data/CST"
-import { SPRITE_SHEETS, dbSprite, UISprite } from "../_data/SPRITE_SHEETS"
+import { SPRITE_SHEETS } from "../_data/SPRITE_SHEETS"
+import { BACKGROUNDS } from "../_data/BACKGROUNDS"
+import { UIImage, UISprite } from "./UITypes"
 
 let instance: SpriteManager
 
@@ -46,12 +47,9 @@ export default class SpriteManager {
     }
 
     getBackground(name: string): UIImage {
-        console.log(`searching for location background ${name}`)
         if ( !this.backgrounds.has(name) ) {
-            console.log(`failed`)
             return CST.IMAGE.LOADING
         }
-        console.log(`found`)
         return this.backgrounds.get(name)!
     }
 }

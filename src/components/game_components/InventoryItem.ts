@@ -1,20 +1,19 @@
 import Sizer from 'phaser3-rex-plugins/templates/ui/sizer/Sizer'
-import { transitItem } from '../../../server/_types/TransitTypes'
 import SpriteManager from '../../utils/SpriteManager'
-import { dbSprite, UISprite } from '../../_data/SPRITE_SHEETS'
+import { UIItem, UISprite } from '../../utils/UITypes'
 import UIScene from '../abstract_and_templates/UIScene'
 
 type inventoryItemStyle = {
     x: number,
     y: number,
-    item: transitItem
+    item: UIItem
 }
 
 const COLOR_DARK = 0x260e04
 
 export default class InventoryItem extends Sizer {
     readonly scene: UIScene
-    item: transitItem
+    item: UIItem
     sprite: UISprite
 
     constructor(scene: UIScene, style: inventoryItemStyle) {
