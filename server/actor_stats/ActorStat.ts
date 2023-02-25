@@ -1,26 +1,29 @@
-import SanguineGameMediator from "../GameMediator"
+import DataManager from "../DataManager"
 import { damageType, QuantTypeEnum, statInfo, StatStackingTypeEnum, StatTypeEnum } from "../_types/StatTypes"
-import ActorStats from "./ActorStats"
+import BonusSource from "./BonusSource"
 import StatBonus from "./StatBonus"
 
 export default class ActorStat {
     private statQuantity: number //only used for static stats
+    private otherStats: Map<StatTypeEnum, ActorStat>
     private name: StatTypeEnum
-    private actor: ActorStats
     private statInfo: statInfo
     private bonuses: StatBonus[]
 
-    constructor(actor: ActorStats, name: StatTypeEnum) {
-        this.actor = actor
+    constructor(name: StatTypeEnum) {
+        this.otherStats = new Map<StatTypeEnum, ActorStat>()
         this.name = name
         this.statQuantity = 0
         this.statInfo = this.getStatInfo()
         this.bonuses = new Array<StatBonus>()
     }
+
+    provideOtherStats(stats: Map<StatTypeEnum, ActorStat>) {
+        this.otherStats = stats
+    }
     
     private getStatInfo() : statInfo {
-        let mediator = SanguineGameMediator.getInstance()
-        let statInfo = mediator.getStatTypeData(this.name)
+        let statInfo = DataManager.getInstance().getStatTypeData(this.name)
         if ( typeof statInfo == 'undefined') throw new Error(`Stat info not found for ${StatTypeEnum[this.name]}`)
         
         statInfo.linearOnly = statInfo.linearOnly ? true : false
@@ -102,27 +105,27 @@ export default class ActorStat {
               GAME LOGIC
     ----------------------------- */
 
-    update(): StatBonus[] {
+    update(sources: Map<string, BonusSource>): StatBonus[] {
         this.bonuses = new Array<StatBonus>()
-        this.actor.getSources().forEach( (e) => {
-            e.getBonuses().forEach( (b) => {
+        for ( const [name, source] of sources ) {
+            source.getBonuses().forEach( (b) => {
                 if ( b.getStat() == this.name ) {
                     this.checkBonusLegality(b)
                     this.bonuses!.push(b)
                 }
             })
-        })
+        }
         return this.bonuses
     }
 
     private checkBonusLegality(b: StatBonus): void {
-        if ( this.isStatic() ) throw new Error(`Stat ${this.getName()} does not allow modification. But bonus ${b.getSourceName()} was applied.`)
-        if ( this.isArithmetic() && !b.isArithmetic() ) throw new Error(`Stat ${this.getName()} is typed arithmetic. But bonus ${b.getSourceName()} applies a non-arithmetic bonus`)
-        if ( this.isFurther() && !b.isFurther() ) throw new Error(`Stat ${this.getName()} is typed further. But bonus ${b.getSourceName()} applies a non-further bonus`)
-        if ( this.statInfo.linearOnly && b.isGeometric() ) throw new Error(`Stat ${this.getName()} is linear only. But bonus ${b.getSourceName()} applies a geometric bonus`)
-        if ( this.statInfo.noPenalty && b.getQuantity() < 0 ) throw new Error(`Stat ${this.getName()} does not allow penalties. But bonus ${b.getSourceName()} applies a penalty`)
-        if ( this.isFurther() && ( b.getQuantity() < 0 || 1 < b.getQuantity() ) ) throw new Error(`Further Bonus Error. Bonus values for Stat ${this.getName()} must be between 0 and 1, got ${b.getQuantity()} from ${b.getSourceName()}`)
-        if ( this.statInfo.damageTyped && !b.hasDamageType() ) throw new Error(`Stat ${this.getName()} is damage typed. But bonus ${b.getSourceName()} has no damage type`)
+        if ( this.isStatic() ) throw new Error(`Stat ${this.getName()} does not allow modification. But bonus ${b.getID()} was applied.`)
+        if ( this.isArithmetic() && !b.isArithmetic() ) throw new Error(`Stat ${this.getName()} is typed arithmetic. But bonus ${b.getID()} applies a non-arithmetic bonus`)
+        if ( this.isFurther() && !b.isFurther() ) throw new Error(`Stat ${this.getName()} is typed further. But bonus ${b.getID()} applies a non-further bonus`)
+        if ( this.statInfo.linearOnly && b.isGeometric() ) throw new Error(`Stat ${this.getName()} is linear only. But bonus ${b.getID()} applies a geometric bonus`)
+        if ( this.statInfo.noPenalty && b.getQuantity() < 0 ) throw new Error(`Stat ${this.getName()} does not allow penalties. But bonus ${b.getID()} applies a penalty`)
+        if ( this.isFurther() && ( b.getQuantity() < 0 || 1 < b.getQuantity() ) ) throw new Error(`Further Bonus Error. Bonus values for Stat ${this.getName()} must be between 0 and 1, got ${b.getQuantity()} from ${b.getID()}`)
+        if ( this.statInfo.damageTyped && !b.hasDamageType() ) throw new Error(`Stat ${this.getName()} is damage typed. But bonus ${b.getID()} has no damage type`)
     }
     
     private determine(bonuses: StatBonus[], damageType? : damageType): number {
@@ -138,7 +141,9 @@ export default class ActorStat {
     private determineBonus(b: StatBonus): number {
         let quant = 1
         if ( b.getQuantMult() !== StatTypeEnum.None ) {
-            quant = b.getQuantity(this.actor.getStat(b.getQuantMult()).get())
+            if ( this.otherStats.has(b.getQuantMult()) ) {
+                quant = b.getQuantity(this.otherStats.get(b.getQuantMult())!.get())
+            }
         }
         quant = b.getQuantity(quant)
         

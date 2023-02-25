@@ -1,6 +1,5 @@
-import Item, { serializedItem } from "./Item";
-
-export type serializedLootTable = { drops: serializedItem[], chance: number }[]
+import { serializedItem, serializedLootTable } from "../_types/SerializedTypes"
+import Item from "./Item"
 
 export default class LootTable {
     private table: { drops: serializedItem[], chance: number }[]

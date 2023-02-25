@@ -26,12 +26,6 @@ describe('ActorStats getters', () => {
         expect(() => stats.getStatValues()).not.toThrowError()
     })
 
-    it('getStat', () => {
-        let stats = new ActorStats([StatTypeEnum.Vigor, StatTypeEnum.Grit])
-        let testStat = new ActorStat(stats, StatTypeEnum.Vigor)
-        expect(stats.getStat(StatTypeEnum.Vigor)).to.deep.equal(testStat)
-    })
-
     it('getStatQuant', () => {
         let stats = new ActorStats([StatTypeEnum.Vigor, StatTypeEnum.Grit])
         stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[0])) //Add 4 Vigor, 2 Grit

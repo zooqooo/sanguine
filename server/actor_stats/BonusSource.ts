@@ -1,4 +1,4 @@
-import SanguineGameMediator from "../GameMediator"
+import DataManager from "../DataManager"
 import { dbBonusSource } from "../_types/DBTypes"
 import StatBonus from "./StatBonus"
 
@@ -7,8 +7,7 @@ export default class BonusSource {
     private statBonuses!: StatBonus[]
 
     static fromName(name: string): BonusSource {
-        const mediator = SanguineGameMediator.getInstance()
-        const bonusSourceInfo = mediator.getBonusSourceData(name as string)
+        const bonusSourceInfo = DataManager.getInstance().getBonusSourceData(name as string)
         if ( typeof bonusSourceInfo == 'undefined') throw new Error(`Bonus Source info not found for ${name}`)
 
         const source = new BonusSource()
@@ -27,7 +26,7 @@ export default class BonusSource {
         this.name = bonusSourceInfo.name
         for ( const bonusComponent of bonusSourceInfo.bonuses ) {
             for ( const statBonus of bonusComponent.stats ) {
-                this.statBonuses.push(new StatBonus(this, statBonus))
+                this.statBonuses.push(new StatBonus(this.name, statBonus))
             }
         }
     }

@@ -1,16 +1,16 @@
 import Pluralize from "pluralize"
-import SanguineGameMediator from "../GameMediator"
+import DataManager from "../DataManager"
+import { serializedItem } from "../_types/SerializedTypes"
 import { transitItem } from "../_types/TransitTypes"
 
-export type serializedItem = { id: string, quantity: number }
+
 
 export default class Item {
     private name: string
     private quantity: number
     
     constructor(item: serializedItem) {
-        let mediator = SanguineGameMediator.getInstance()
-        let itemInfo = mediator.getItemData(item.id)
+        let itemInfo = DataManager.getInstance().getItemData(item.id)
         if ( typeof itemInfo == 'undefined') throw new Error(`Item info not found for ${item.id}`)
 
         this.name = itemInfo.name

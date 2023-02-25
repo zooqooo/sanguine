@@ -1,19 +1,20 @@
 import { DamageBaseTypeEnum, damagePreRoll, damageQuant, DamageSuperTypeEnum, damageType, StatTypeEnum } from "../_types/StatTypes"
-import CombatAction from "./CombatAction"
-import CombatActor from "./CombatActor"
+
 import beta from "@stdlib/random-base-beta"
+import { transitCombatAttackInfo } from "../_types/CombatTypes"
+import ActorStats from "../actor_stats/ActorStats"
 
 export default class CombatAttack {
-    private attacker: CombatActor
-    private defenders: CombatActor[]
+    private attackerStats: ActorStats
+    private defenderStats: ActorStats[]
     private damages: damageQuant[]
 
     private accuracy: number
     private crit: boolean
 
-    constructor(attacker: CombatActor, action: CombatAction) {
-        this.attacker = attacker
-        this.defenders = new Array<CombatActor>()
+    constructor(attackerStats: ActorStats, defenderStats: ActorStats[], action: transitCombatAttackInfo) {
+        this.attackerStats = attackerStats
+        this.defenderStats = defenderStats
         this.damages = new Array<damageQuant>()
 
         // assert that no universal types appear in the damage types. Those types are only for defensive stats and for bonuses that apply to
@@ -25,10 +26,10 @@ export default class CombatAttack {
         //   if there are any on-crit, pre-hit, or on-hit effects, they need to be stored to be retrieved by the combat class
         
         //   determine the accuracy
-        this.accuracy = this.attacker.stats.getInstantStatValue(StatTypeEnum.Accuracy, [])
+        this.accuracy = this.attackerStats.getInstantStatValue(StatTypeEnum.Accuracy, [])
         
         //   determine the crit chance
-        this.attacker.stats.getInstantStatValue(StatTypeEnum.Critical_Chance, [])
+        this.attackerStats.getInstantStatValue(StatTypeEnum.Critical_Chance, [])
         // once crit chance is calculated, the crit can be rolled immediatly
         this.crit = false
 
@@ -40,8 +41,8 @@ export default class CombatAttack {
         //   add crit damage
         // if the attack was a crit, the additional crit damage needs to be added into the raw damage array
         if ( this.crit ) {
-            this.attacker.stats.getInstantStatValue(StatTypeEnum.Critical_Stamina_Damage, [])
-            this.attacker.stats.getInstantStatValue(StatTypeEnum.Critical_Tension_Damage, [])
+            this.attackerStats.getInstantStatValue(StatTypeEnum.Critical_Stamina_Damage, [])
+            this.attackerStats.getInstantStatValue(StatTypeEnum.Critical_Tension_Damage, [])
             // find applicable stamina damages and create new crit quants
             // find applicable tension damages and create new crit quants
             this.damages.push( { quantity: 1, type: { baseType: DamageBaseTypeEnum.Crit, superType: DamageSuperTypeEnum.Stamina } } )
@@ -64,14 +65,14 @@ export default class CombatAttack {
 
     private calculateRawDamageQuant(damage: damagePreRoll): damageQuant {
         //   determine max damage
-        const max_damage = this.attacker.stats.getInstantStatValue(StatTypeEnum.Max_Damage, [], damage.type)
+        const max_damage = this.attackerStats.getInstantStatValue(StatTypeEnum.Max_Damage, [], damage.type)
         
         let rolledDamage = 0
         if ( max_damage <= damage.min ) {
             rolledDamage = max_damage
         } else {
-            const advantage = this.attacker.stats.getInstantStatValue(StatTypeEnum.Advantage, [], damage.type)
-            const disadvantage = this.attacker.stats.getInstantStatValue(StatTypeEnum.Disadvantage, [], damage.type)
+            const advantage = this.attackerStats.getInstantStatValue(StatTypeEnum.Advantage, [], damage.type)
+            const disadvantage = this.attackerStats.getInstantStatValue(StatTypeEnum.Disadvantage, [], damage.type)
             const randomV = this.calculateAlphaBeta(advantage - disadvantage)
             rolledDamage = Math.floor(randomV * (max_damage - damage.min + 1) + damage.min)
         }
@@ -80,7 +81,7 @@ export default class CombatAttack {
         // bonus damage applies to raw damage, so once it is calculated, multply the appropriate damage values and store them in the array
         // the final damage can be calculated in this step by taking the base damage calculated by the earlier steps and passing it into
         // the function as an additional StatBonus
-        const quantity = this.attacker.stats.getInstantStatValue(StatTypeEnum.Bonus_Damage, [], damage.type)
+        const quantity = this.attackerStats.getInstantStatValue(StatTypeEnum.Bonus_Damage, [], damage.type)
 
         return {quantity: quantity, type: damage.type}
     }
@@ -103,14 +104,14 @@ export default class CombatAttack {
     }
 
     perform(): void {
-        for ( const defender of this.defenders ) {
+        for ( const defender of this.defenderStats ) {
             this.processAttack(defender)
         }
     }
 
-    private processAttack(defender: CombatActor): void {
+    private processAttack(defender: ActorStats): void {
         //evasion
-        if ( defender.stats.performTrial(StatTypeEnum.Evasion, this.accuracy) ) {
+        if ( defender.performTrial(StatTypeEnum.Evasion, this.accuracy) ) {
             return
         }
 
@@ -121,7 +122,7 @@ export default class CombatAttack {
         for ( const rawDamage of this.damages ) {
             const finalDamage = this.processDamage(rawDamage, defender)
             damages.push(finalDamage)
-            defender.stats.applyDamage(finalDamage)
+            defender.applyDamage(finalDamage)
         }
         
         //remove pre-hit effects
@@ -130,17 +131,17 @@ export default class CombatAttack {
         //retaliations
     }
 
-    private processDamage ( damage: damageQuant, defender: CombatActor ): damageQuant {
+    private processDamage ( damage: damageQuant, defender: ActorStats ): damageQuant {
         const damageType = damage.type
         let calcDamage = damage.quantity
         //protection
-        const protection = defender.stats.getStatValue(StatTypeEnum.Protection, damageType)
+        const protection = defender.getStatValue(StatTypeEnum.Protection, damageType)
         calcDamage = calcDamage - ( calcDamage * protection )
         //resistance
-        const resistance = defender.stats.getStatValue(StatTypeEnum.Resistance, damageType)
+        const resistance = defender.getStatValue(StatTypeEnum.Resistance, damageType)
         calcDamage = calcDamage - ( calcDamage * resistance )
         //armor
-        const armor = defender.stats.getStatValue(StatTypeEnum.Armor, damageType)
+        const armor = defender.getStatValue(StatTypeEnum.Armor, damageType)
         calcDamage = calcDamage * ( 100 / ( 100 + armor ) )
         //ward
 

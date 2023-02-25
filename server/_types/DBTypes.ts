@@ -1,5 +1,4 @@
-import { serializedStatBonus } from "../actor_stats/StatBonus"
-import { serializedLootTable } from "../inventory/LootTable"
+import { serializedLootTable, serializedStatBonus } from "./SerializedTypes"
 
 export enum itemTypeEnum {
     Ingredients_Base,

@@ -1,15 +1,7 @@
 import SanguineActor from "./Actor"
 import ActorInitializer from "./actor_stats/ActorInitializer"
-import { serializedItem } from "./inventory/Item"
+import { serializedCharacter } from "./_types/SerializedTypes"
 import { transitCharacter } from "./_types/TransitTypes"
-
-export type serializedCharacter = {
-    name: string,
-    location: number,
-    initialized: boolean,
-    inventory?: serializedItem[],
-    bonusSources?: string[]
-}
 
 export default class SanguineCharacter extends SanguineActor {
     private location: number

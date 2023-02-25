@@ -1,11 +1,11 @@
 import localforage from "localforage"
 
-import SanguineCharacter, { serializedCharacter } from "./Character"
+import SanguineCharacter from "./Character"
 import Region from "./locations/Region"
-import { serializedTile } from "./locations/Tile"
 import { DUMMY_SAVE } from "./_data/PLAYER_DATA"
+import { serializedCharacter, serializedGame, serializedTile } from "./_types/SerializedTypes"
 
-export type serializedGame = { character: serializedCharacter, region: serializedTile[] }
+
 
 const VERSION = `003`
 

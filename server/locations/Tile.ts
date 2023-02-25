@@ -1,12 +1,8 @@
-import SanguineGameMediator from "../GameMediator"
 import { transitLocation } from "../_types/TransitTypes"
 import LootTable from "../inventory/LootTable"
 import Item from "../inventory/Item"
-
-export type serializedTile = {
-    id: number,
-    bounty?: number
-}
+import { serializedTile } from "../_types/SerializedTypes"
+import DataManager from "../DataManager"
 
 export default class Tile {
     private id: number
@@ -19,8 +15,7 @@ export default class Tile {
     private bounty: number
 
     constructor(tile: serializedTile) {
-        let mediator = SanguineGameMediator.getInstance()
-        let tileInfo = mediator.getTileData(tile.id)
+        let tileInfo = DataManager.getInstance().getTileData(tile.id)
         if ( typeof tileInfo == 'undefined') throw new Error(`Tile info not found for ${tile.id}`)
 
         this.id = tile.id

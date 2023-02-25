@@ -1,6 +1,4 @@
-import { serializedCharacter } from "../Character"
-import { serializedTile } from "../locations/Tile"
-import { serializedGame } from "../Serializer"
+import { serializedCharacter, serializedGame, serializedTile } from "../_types/SerializedTypes"
 
 export type player = {
     name: string,

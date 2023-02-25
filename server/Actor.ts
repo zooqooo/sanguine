@@ -1,13 +1,8 @@
 import ActorStats from "./actor_stats/ActorStats"
 import BonusSource from "./actor_stats/BonusSource"
 import Inventory from "./inventory/Inventory"
-import { serializedItem } from "./inventory/Item"
+import { serializedActor } from "./_types/SerializedTypes"
 
-export type serializedActor = {
-    name: string,
-    inventory?: serializedItem[],
-    bonusSources?: string[]
-}
 
 export default class SanguineActor {
     protected name: string

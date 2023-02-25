@@ -1,8 +1,8 @@
+import DataManager from "../DataManager"
 import ActorStat from "./ActorStat"
-import { damageQuant, DamageSuperTypeEnum, damageType, ElementalTypeEnum, StatTypeEnum } from "../_types/StatTypes"
 import BonusSource from "./BonusSource"
-import SanguineGameMediator from "../GameMediator"
 import StatBonus from "./StatBonus"
+import { damageQuant, DamageSuperTypeEnum, damageType, ElementalTypeEnum, StatTypeEnum } from "../_types/StatTypes"
 
 function sigmoid(z: number): number {
     return 1 / (1 + Math.exp(-z))
@@ -13,20 +13,23 @@ export default class ActorStats {
     private damageAccumulators: Map<DamageSuperTypeEnum, number> 
     private sources: Map<string, BonusSource>
 
-    constructor(statNames?: StatTypeEnum[]) {
+    constructor(statTypes?: StatTypeEnum[]) {
         this.stats = new Map<StatTypeEnum, ActorStat>()
         this.damageAccumulators = new Map<DamageSuperTypeEnum, number>()
         this.sources = new Map<string, BonusSource>()
 
-        if (typeof statNames == 'undefined') {
-            let mediator = SanguineGameMediator.getInstance()
-            statNames = mediator.getAllStats()
+        if (typeof statTypes == 'undefined') {
+            statTypes = DataManager.getInstance().getAllStats()
         }
 
-        statNames.forEach( (e) => {
-            let stat = new ActorStat(this, e)
-            this.stats.set(e, stat)
-        })
+        for ( const statType of statTypes ) {
+            let stat = new ActorStat(statType)
+            this.stats.set(statType, stat)
+        }
+
+        for ( const [name, stat] of this.stats ) {
+            stat.provideOtherStats(this.stats)
+        }
     }
     
     /* -----------------------------
@@ -133,7 +136,7 @@ export default class ActorStats {
     
     update(): void {
         this.stats.forEach( (e) => {
-            e.update()
+            e.update(this.getSources())
         })
         this.setStaticStats()
     }

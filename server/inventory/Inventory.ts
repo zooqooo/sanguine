@@ -1,5 +1,6 @@
+import { serializedItem } from "../_types/SerializedTypes";
 import { transitItem } from "../_types/TransitTypes";
-import Item, { serializedItem } from "./Item";
+import Item from "./Item";
 
 export default class Inventory {
     private items: Map<string, Item>

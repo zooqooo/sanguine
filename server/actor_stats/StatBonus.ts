@@ -1,24 +1,16 @@
+import { serializedStatBonus } from "../_types/SerializedTypes"
 import { DamageBaseTypeEnum, DamageSuperTypeEnum, damageType, QuantTypeEnum, StatTypeEnum } from "../_types/StatTypes"
-import BonusSource from "./BonusSource"
-
-export type serializedStatBonus = {
-    stat: StatTypeEnum,
-    quantity: number,
-    quantType: QuantTypeEnum,
-    quantMult?: StatTypeEnum,
-    damageType?: damageType
-}
 
 export default class StatBonus {
-    private source: BonusSource
+    private id: string
     private stat: StatTypeEnum
     private quantity: number
     private quantType: QuantTypeEnum
     private quantMult: StatTypeEnum
     private damageType?: damageType
 
-    constructor(source: BonusSource, config: serializedStatBonus) {
-        this.source = source
+    constructor(id: string, config: serializedStatBonus) {
+        this.id = id
         this.stat = config.stat
         this.quantity = config.quantity
         this.quantType = config.quantType
@@ -30,8 +22,8 @@ export default class StatBonus {
                 GETTERS
     ----------------------------- */
 
-    getSourceName(): string {
-        return this.source.getID()
+    getID(): string {
+        return this.id
     }
 
     getStat() : StatTypeEnum {
@@ -72,7 +64,7 @@ export default class StatBonus {
     }
 
     getDamageType(): damageType {
-        if ( !this.hasDamageType() ) throw new Error(`Attempted to fetch damage type from stat bonus with no damage type. Source: ${this.source.getID()} Stat: ${this.stat}`)
+        if ( !this.hasDamageType() ) throw new Error(`Attempted to fetch damage type from stat bonus with no damage type. Source: ${this.id} Stat: ${this.stat}`)
         return this.damageType!
     }
 

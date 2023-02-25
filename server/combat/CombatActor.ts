@@ -1,7 +1,7 @@
 import SanguineActor from "../Actor"
 import ActorStats from "../actor_stats/ActorStats"
-import { damageQuant, damageType, StatTypeEnum } from "../_types/StatTypes"
-import CombatAction from "./CombatAction"
+import { ActionTypeEnum, transitCombatAction, transitCombatActionInfo, transitCombatAttackInfo } from "../_types/CombatTypes"
+import { StatTypeEnum } from "../_types/StatTypes"
 import CombatAttack from "./CombatAttack"
 
 export default class CombatActor {
@@ -9,7 +9,7 @@ export default class CombatActor {
     readonly actor: SanguineActor
     readonly stats: ActorStats
     private waitTime: number
-    private action: CombatAction | undefined
+    private action: transitCombatActionInfo | undefined
     
     constructor(id: string, actor: SanguineActor) {
         this.id = id
@@ -30,7 +30,7 @@ export default class CombatActor {
         return this.waitTime
     }
 
-    getAction(): CombatAction {
+    getAction(): transitCombatActionInfo {
         //returns the current combat action
         //new actions can only be declared between game ticks
         //as assurance that the action can't be undefined in the frames between when hasActionReady() is called and this is called
@@ -48,8 +48,8 @@ export default class CombatActor {
                SETTERS
     ----------------------------- */
 
-    setAction(action: CombatAction): void {
-        this.action = action
+    setAction(action: transitCombatAction<transitCombatActionInfo>): void {
+        this.action = action.info
     }
 
     resetAction(): void {
@@ -99,8 +99,9 @@ export default class CombatActor {
         const action = this.getAction()
         // if the action has lag time and isn't flagged as ready to go
         // set the character's lag time to the action's lag time and return
-        if ( action.isAttack() ) {
-            const attack = new CombatAttack(this, action) //the constructor takes the action and determines all the random elements
+        if ( action.type == ActionTypeEnum.Attack ) {
+            const info = action as transitCombatAttackInfo
+            const attack = new CombatAttack(this.stats, [this.stats], info) //the constructor takes the action and determines all the random elements
             attack.perform()
         }
         
@@ -110,7 +111,7 @@ export default class CombatActor {
 
     resetWaitTime(): void {
         const action = this.getAction()
-        const waitTime = action.getWaitTime()
+        const waitTime = action.waitTime
         this.waitTime = waitTime
     }    
 }
