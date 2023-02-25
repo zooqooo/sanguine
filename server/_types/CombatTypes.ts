@@ -1,3 +1,7 @@
+import StatBonus from "../actor_stats/StatBonus"
+import { dbBonusComponent } from "./DBTypes"
+import { damagePreRoll } from "./StatTypes"
+
 export enum ActionTypeEnum {
     Attack
 }
@@ -5,7 +9,7 @@ export enum ActionTypeEnum {
 export type transitGameTick = {
     tick: number,
     actors: Map<string, transitCombatActor> ,
-    log: transitActionLog[]
+    log: transitActionLog<transitCombatActionEvent>[]
 }
 
 export type transitCombatActor = {
@@ -26,13 +30,26 @@ export type transitCombatStance = {
     name: string
 }
 
-export type transitCombatAction = {
+export type transitCombatAction<T extends transitCombatActionInfo> = {
     name: string
+    info: T
 }
 
-export type transitActionLog = {
+export interface transitCombatActionInfo {
+    type: ActionTypeEnum,
+    waitTime: number,
+    lagTime: number
+}
+
+export interface transitCombatAttackInfo extends transitCombatActionInfo {
+    type: ActionTypeEnum.Attack,
+    bonuses: dbBonusComponent[]
+    damages: damagePreRoll[]
+}
+
+export type transitActionLog<T extends transitCombatEvent> = {
     log: string
-    event: transitCombatEvent
+    event: T
 }
 
 export enum CombatEventTypeEnum {

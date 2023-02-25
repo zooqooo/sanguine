@@ -102,7 +102,15 @@ export enum DamageSuperTypeEnum {
 
 export type damageType = {baseType: DamageBaseTypeEnum, superType: DamageSuperTypeEnum}
 
-export type damageQuant = {quantity: number, type: damageType}
+export type damageBaseTypeUniversal = DamageBaseTypeEnum.All | DamageBaseTypeEnum.Physical | DamageBaseTypeEnum.Elemental | DamageBaseTypeEnum.Special
+
+export type damageSuperTypeUniversal = DamageSuperTypeEnum.All
+
+export type damageTypeNU = {baseType: Exclude<DamageBaseTypeEnum, damageBaseTypeUniversal>, superType: Exclude<DamageSuperTypeEnum, damageSuperTypeUniversal>}
+
+export type damagePreRoll = {min: number, max: number, type: damageTypeNU}
+
+export type damageQuant = {quantity: number, type: damageTypeNU}
 
 export type statInfo = {
     name: StatTypeEnum,

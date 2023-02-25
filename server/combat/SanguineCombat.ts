@@ -1,5 +1,4 @@
 import SanguineActor from "../Actor"
-import { damageType, StatTypeEnum } from "../_types/StatTypes"
 import CombatActor from "./CombatActor"
 import { transitGameTick } from "../_types/CombatTypes"
 
@@ -35,9 +34,17 @@ export default class SanguineCombat {
     }
 
     private createID(actorName: string): string {
-        //returns a unique name for an actor based on the actors already in the combat scene
-        //TODO: ensure return value doesn't intersect with existing members of the combat scene
-        return actorName
+        let suffix: number = 1
+        let name: string = `${actorName}_${suffix}` 
+        let existingNames: string[] = Array.from(this.combatants.keys())
+        for ( let i = 0; i < existingNames.length; i++ ) {
+            if ( name == existingNames[i] ) {
+                suffix++
+                name = `${actorName}_${suffix}` 
+                i = -1
+            }
+        }
+        return name
     }
 
     setActorStance(): void {

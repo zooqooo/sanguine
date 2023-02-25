@@ -1,10 +1,6 @@
 import SanguineActor from "./Actor"
 import ActorInitializer from "./actor_stats/ActorInitializer"
-import ActorStats from "./actor_stats/ActorStats"
-import BonusSource from "./actor_stats/BonusSource"
-import Inventory from "./inventory/Inventory"
-import Item, { serializedItem } from "./inventory/Item"
-import { StatTypeEnum } from "./_types/StatTypes"
+import { serializedItem } from "./inventory/Item"
 import { transitCharacter } from "./_types/TransitTypes"
 
 export type serializedCharacter = {
