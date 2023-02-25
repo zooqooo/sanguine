@@ -1,8 +1,7 @@
 import { DamageBaseTypeEnum, damageQuant, DamageSuperTypeEnum, damageType, StatTypeEnum } from "../_types/StatTypes"
 import CombatAction from "./CombatAction"
 import CombatActor from "./CombatActor"
-
-var beta = require( '@stdlib/random-base-beta' )
+import beta from "@stdlib/random-base-beta"
 
 export default class CombatAttack {
     private attacker: CombatActor

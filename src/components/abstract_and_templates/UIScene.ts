@@ -2,7 +2,7 @@ import EventDispatcher from "../../utils/EventDispatcher"
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js'
 import ToolTip from "../general_components/ToolTip"
 import { Input } from "phaser"
-import { sndManager } from "../../CST"
+import { sndManager } from "../../_data/CST"
 
 
 export default class UIScene extends Phaser.Scene {

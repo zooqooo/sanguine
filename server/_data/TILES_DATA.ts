@@ -1,4 +1,3 @@
-import { CST } from "../../src/CST"
 import { dbTile } from "../_types/DBTypes"
 
 
@@ -6,7 +5,7 @@ export const TILES : Array<dbTile> = [
     {
         index: 0,
         name: 'Major Pool',
-        background: CST.BACKGROUND.SANGUINEPOOL,
+        background: "Sanguine Pool",
         allowForage: true,
         allowCollect: true,
         forageTable: [
@@ -29,7 +28,7 @@ export const TILES : Array<dbTile> = [
     {
         index: 1,
         name: 'Meadow',
-        background: CST.BACKGROUND.MEADOW,
+        background: 'Meadow',
         allowForage: true,
         allowCollect: true,
         forageTable: [
@@ -48,7 +47,7 @@ export const TILES : Array<dbTile> = [
     {
         index: 2,
         name: 'Mesa',
-        background: CST.BACKGROUND.MESA,
+        background: 'Mesa',
         allowForage: true,
         allowCollect: true,
         forageTable: [
@@ -67,7 +66,7 @@ export const TILES : Array<dbTile> = [
     {
         index: 3,
         name: 'Waterfall',
-        background: CST.BACKGROUND.WATERFALL,
+        background: 'Waterfall',
         allowForage: true,
         allowCollect: true,
         forageTable: [
@@ -86,7 +85,7 @@ export const TILES : Array<dbTile> = [
     {
         index: 4,
         name: 'Oasis',
-        background: CST.BACKGROUND.OASIS,
+        background: 'Oasis',
         allowForage: true,
         allowCollect: true,
         forageTable: [
@@ -105,7 +104,7 @@ export const TILES : Array<dbTile> = [
     {
         index: 5,
         name: 'Valley',
-        background: CST.BACKGROUND.VALLEY,
+        background: 'Valley',
         allowForage: true,
         allowCollect: true,
         forageTable: [
@@ -124,7 +123,7 @@ export const TILES : Array<dbTile> = [
     {
         index: 6,
         name: 'Lake',
-        background: CST.BACKGROUND.LAKE,
+        background: 'Lake',
         allowForage: true,
         allowCollect: true,
         forageTable: [

@@ -3,7 +3,7 @@ import UIScene from "../components/abstract_and_templates/UIScene"
 import OutboundRequests from "../utils/OutboundRequests"
 import Serializer from "../../server/Serializer"
 
-import { CST } from "../CST"
+import { CST } from "../_data/CST"
 import { BLACKSTONE_PANEL, TABBED_CONTROLLER } from "../layouts/ExplorationLayout"
 
 import TabbedBook from "../components/general_components/TabbedBook"

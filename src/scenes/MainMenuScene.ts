@@ -3,7 +3,7 @@ import Button from '../components/general_components/Button'
 import Frame from '../components/general_components/Frame'
 import ItemSelector from '../components/general_components/ItemSelector'
 import EventDispatcher from '../utils/EventDispatcher'
-import { CST, sndManager } from '../CST'
+import { CST, sndManager } from '../_data/CST'
 import { DUMMY_SAVE, player, PLAYERS } from '../../server/_data/PLAYER_DATA'
 import { START, OPTIONS, LOGIN, CHARACTER_SELECT } from '../layouts/MainMenuLayout'
 

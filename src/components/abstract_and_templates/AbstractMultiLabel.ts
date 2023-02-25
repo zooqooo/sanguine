@@ -1,6 +1,6 @@
 import Container from 'phaser3-rex-plugins/templates/ui/container/Container'
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js'
-import { CST } from '../../CST'
+import { CST } from '../../_data/CST'
 import UIScene from './UIScene'
 
 const COLOR_LIGHT = 0x7b5e57

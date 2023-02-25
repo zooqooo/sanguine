@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { CST } from '../CST'
+import { CST } from '../_data/CST'
 //@ts-ignore
 import WebFontFile from '../utils/WebFontFile'
 

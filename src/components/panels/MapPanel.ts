@@ -1,6 +1,6 @@
 import Container from 'phaser3-rex-plugins/templates/ui/container/Container'
 
-import { CST } from "../../CST"
+import { CST } from "../../_data/CST"
 import HexCell, { Layout, Point } from '../../utils/HexCell'
 import MapTile from '../game_components/MapTile'
 import ExpolorationScene from '../../scenes/ExplorationScene'

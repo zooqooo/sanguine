@@ -6,6 +6,8 @@ export const CST = {
     },
     IMAGE: {
         LOGO: "Logo.png",
+        MISSING_TEXTURE: "MissingTexture.png",
+        LOADING: "Loading.png",
         MENU_BG: "MenuBackground.jpg",
         FINGER_PAINT: "FingerPaint.png",
         SLIDER_TRACK: "SliderTrack.png",
@@ -16,7 +18,6 @@ export const CST = {
         HEX_BORDER: "HexBorder.png"
     },
     BACKGROUND: {
-        LOADING: "Loading.png",
         SANGUINEPOOL: "SanguinePool.png",
         LAKE: "00103.png",
         WATERFALL: "00202.png",

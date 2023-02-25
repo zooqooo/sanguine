@@ -6,7 +6,6 @@ export type serializedItem = { id: string, quantity: number }
 
 export default class Item {
     private name: string
-    private sprite: { sheet: { key: string; frameWidth: number; frameHeight: number} ; frame: number}
     private quantity: number
     
     constructor(item: serializedItem) {
@@ -15,7 +14,6 @@ export default class Item {
         if ( typeof itemInfo == 'undefined') throw new Error(`Item info not found for ${item.id}`)
 
         this.name = itemInfo.name
-        this.sprite = itemInfo.sprite
         this.quantity = item.quantity? item.quantity : 1
     }
     
@@ -29,10 +27,6 @@ export default class Item {
 
     getName(): string {
         return this.name
-    }
-
-    getSprite(): { sheet: { key: string; frameWidth: number; frameHeight: number} ; frame: number}  {
-        return this.sprite
     }
 
     getQuantity() : number {
@@ -82,7 +76,7 @@ export default class Item {
     ----------------------------- */
 
     transit() : transitItem {
-        return { name: this.name, sprite: this.sprite, quantity: this.quantity }
+        return { name: this.name, quantity: this.quantity }
     }
 
     save() : serializedItem {

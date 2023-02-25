@@ -1,4 +1,4 @@
-import { CST } from "../../CST"
+import { CST } from "../../_data/CST"
 import ExpolorationScene from '../../scenes/ExplorationScene'
 import HexCell, { Layout, Point } from '../../utils/HexCell'
 import Button, { buttonStyle } from '../general_components/Button'

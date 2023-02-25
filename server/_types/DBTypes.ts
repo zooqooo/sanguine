@@ -16,14 +16,6 @@ export enum itemTypeEnum {
 
 export type dbItem<T> = {
     name: string,
-    sprite: {
-        sheet: {
-            key: string,
-            frameWidth: number,
-            frameHeight: number
-        },
-        frame: number
-    }
     features: T
 }
 

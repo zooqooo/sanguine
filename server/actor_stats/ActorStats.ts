@@ -4,7 +4,9 @@ import BonusSource from "./BonusSource"
 import SanguineGameMediator from "../GameMediator"
 import StatBonus from "./StatBonus"
 
-var sigmoid = require('sigmoid')
+function sigmoid(z: number): number {
+    return 1 / (1 + Math.exp(-z))
+  }
 
 export default class ActorStats {
     private stats: Map<StatTypeEnum, ActorStat>

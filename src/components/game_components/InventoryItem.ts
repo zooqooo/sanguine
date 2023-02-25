@@ -1,5 +1,7 @@
 import Sizer from 'phaser3-rex-plugins/templates/ui/sizer/Sizer'
 import { transitItem } from '../../../server/_types/TransitTypes'
+import SpriteManager from '../../utils/SpriteManager'
+import { dbSprite, UISprite } from '../../_data/SPRITE_SHEETS'
 import UIScene from '../abstract_and_templates/UIScene'
 
 type inventoryItemStyle = {
@@ -13,6 +15,7 @@ const COLOR_DARK = 0x260e04
 export default class InventoryItem extends Sizer {
     readonly scene: UIScene
     item: transitItem
+    sprite: UISprite
 
     constructor(scene: UIScene, style: inventoryItemStyle) {
         super(scene)
@@ -20,6 +23,8 @@ export default class InventoryItem extends Sizer {
         this.x = style.x
         this.y = style.y
         this.item = style.item
+        const spriteManager = SpriteManager.getInstance()
+        this.sprite = spriteManager.getSprite(this.item.name)
 
         const label = this.scene.rexUI.add.holyGrail({
             x: 0, y: 0,
@@ -27,8 +32,8 @@ export default class InventoryItem extends Sizer {
             background: this.scene.rexUI.add.roundRectangle(0, 0, 2, 2, 10, COLOR_DARK),    
             content: this.scene.add.sprite(
                 0, 0,
-                this.item.sprite.sheet.key,
-                this.item.sprite.frame
+                this.sprite.sheet.key,
+                this.sprite.frame
             ).setScale(0.6),
             footer: this.scene.add.text(
                 0, 0, this.item.name, { fontSize: '11px', wordWrap: { width: 80 } }

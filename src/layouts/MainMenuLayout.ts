@@ -1,4 +1,4 @@
-import { CST } from '../CST'
+import { CST } from '../_data/CST'
 
 export const START = {
     START_BUTTON: { // startButton

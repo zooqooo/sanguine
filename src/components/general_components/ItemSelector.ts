@@ -1,6 +1,6 @@
 import Container from 'phaser3-rex-plugins/templates/ui/container/Container'
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js'
-import { CST, sndManager } from "../../CST"
+import { CST, sndManager } from "../../_data/CST"
 import EventDispatcher from '../../utils/EventDispatcher'
 import Button from './Button'
 import Frame from './Frame'

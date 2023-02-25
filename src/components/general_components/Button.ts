@@ -1,4 +1,4 @@
-import { sndManager } from "../../CST"
+import { sndManager } from "../../_data/CST"
 import UIScene from "../abstract_and_templates/UIScene"
 
 export type buttonStyle = {

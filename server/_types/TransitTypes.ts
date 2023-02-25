@@ -4,14 +4,6 @@ export type transitLocation = { index: number, name: string, background: string,
 
 export type transitItem = {
     name: string,
-    sprite: {
-        sheet: {
-            key: string,
-            frameWidth: number,
-            frameHeight: number
-        },
-        frame: number
-    },
     quantity: number
 }
 

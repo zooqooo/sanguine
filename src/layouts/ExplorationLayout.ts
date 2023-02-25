@@ -1,5 +1,5 @@
 import { buttonStyle } from '../components/general_components/Button'
-import { CST, ICONS } from '../CST'
+import { CST, ICONS } from '../_data/CST'
 
 export const TABBED_CONTROLLER = {
     x: 0,

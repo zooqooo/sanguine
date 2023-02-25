@@ -1,9 +1,10 @@
-import { CST } from '../../CST'
+import { CST } from '../../_data/CST'
 
 import TransitionImage from 'phaser3-rex-plugins/plugins/transitionimage'
 import Toast from "phaser3-rex-plugins/templates/ui/toast/Toast"
 
 import ExpolorationScene from '../../scenes/ExplorationScene'
+import SpriteManager from '../../utils/SpriteManager'
 
 type locationPanelStyle = {
     x: number,
@@ -25,7 +26,7 @@ export default class LocationPanel extends Phaser.GameObjects.Container {
         this.x = style.x
         this.y = style.y
 
-        this.backgroundImage = new TransitionImage(this.scene, 0, 0, CST.BACKGROUND.LOADING).setScale(3).setOrigin(1, 0)
+        this.backgroundImage = new TransitionImage(this.scene, 0, 0, CST.IMAGE.LOADING).setScale(3).setOrigin(1, 0)
         this.backgroundImage.setDuration(380)
 
         this.toast = this.scene.rexUI.add.toast({
@@ -61,12 +62,14 @@ export default class LocationPanel extends Phaser.GameObjects.Container {
 
     initBackground(targetBackground: string) {
         this.backgroundImage.setDuration(0)
-        this.backgroundImage.transit(targetBackground)
+        this.transitBackground(targetBackground)
         this.backgroundImage.setDuration(380)
     }
 
     transitBackground(targetBackground: string) {
-        this.backgroundImage.transit(targetBackground)
+        const spriteManager = SpriteManager.getInstance()
+        const background = spriteManager.getBackground(targetBackground)
+        this.backgroundImage.transit(background)
     }
 
     createToast(message: string) {
