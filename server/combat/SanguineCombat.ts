@@ -64,7 +64,7 @@ export default class SanguineCombat {
 
     requestGameTick(): transitGameTick {
         if ( this.processing ) {
-            return {}
+            return {} as transitGameTick
         }
         this.processing = true
         const gameTick = this.makeGameTick()
@@ -83,15 +83,14 @@ export default class SanguineCombat {
         }
         if ( readyActors.length > 0 ) this.takeActions(readyActors)
         this.elapsedGameTicks++
-        return {}
+        return {} as transitGameTick
     }
     
     private takeActions(readyActors: CombatActor[]): void {
         readyActors.sort((a, b) => a.getWaitTime() < b.getWaitTime() ? -1 : a.getWaitTime() < b.getWaitTime() ? 1 : 0)
         //actors should continue having their wait time tick below 0 while in lag time, so that they can be sorted properly here
-        while ( readyActors.length > 0 ) {
-            const currentActor = readyActors.pop()!
-            currentActor.takeAction()
+        for ( const actor of readyActors ) {
+            actor.takeAction()
         }
     }
 }

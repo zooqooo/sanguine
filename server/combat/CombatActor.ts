@@ -39,7 +39,6 @@ export default class CombatActor {
     }
     
     hasActionReady(): boolean {
-        this.updateAction()
         //returns true if the player/AI has an action declared
         //returns false if this.action is undefined
         return false
@@ -62,12 +61,19 @@ export default class CombatActor {
     ----------------------------- */
 
     makeGameTick(): boolean {
+        this.updateStance()
+        this.updateAction()
+        const readyToAct = this.processWaitTime()
+        return readyToAct
+    }
+
+    private processWaitTime(): boolean {
         // this needs to be able to handle lag time in addition to wait time
         // if they are in lag time, and it decrements to 0, a flag needs to be flipped in the action
         // to mark that the character is ready to act
         const speed = this.actor.stats.getStatValue(StatTypeEnum.Speed)
-        this.waitTime = this.waitTime = speed
-        if ( this.waitTime <= 0 ) {
+        this.waitTime = this.waitTime - speed
+        if ( this.waitTime <= 0 && this.hasActionReady() ) {
             return true
         } else {
             return false
@@ -90,10 +96,7 @@ export default class CombatActor {
     }
 
     takeAction(): void {
-        if ( !this.hasActionReady() ) {
-            return
-        }
-        const action = this.action as CombatAction
+        const action = this.getAction()
         // if the action has lag time and isn't flagged as ready to go
         // set the character's lag time to the action's lag time and return
         if ( action.isAttack() ) {
@@ -109,10 +112,5 @@ export default class CombatActor {
         const action = this.getAction()
         const waitTime = action.getWaitTime()
         this.waitTime = waitTime
-    }
-    
-    applyDamage( damage: damageQuant ): void {
-        this.actor.stats.applyDamage(damage)
-    }
-    
+    }    
 }

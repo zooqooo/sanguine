@@ -122,7 +122,7 @@ export default class CombatAttack {
         for ( const rawDamage of this.damages ) {
             const finalDamage = this.processDamage(rawDamage, defender)
             damages.push(finalDamage)
-            defender.applyDamage(finalDamage)
+            defender.stats.applyDamage(finalDamage)
         }
         
         //remove pre-hit effects
