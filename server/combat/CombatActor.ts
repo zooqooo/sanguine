@@ -1,6 +1,6 @@
 import SanguineActor from "../Actor"
 import ActorStats from "../actor_stats/ActorStats"
-import { ActionTypeEnum, transitCombatAction, transitCombatActionInfo, transitCombatAttackInfo } from "../_types/CombatTypes"
+import { ActionTypeEnum, transitCombatAction, transitCombatActionInfo, transitCombatActor, transitCombatAttackInfo, transitWaitTime } from "../_types/CombatTypes"
 import { StatTypeEnum } from "../_types/StatTypes"
 import CombatAttack from "./CombatAttack"
 
@@ -9,6 +9,7 @@ export default class CombatActor {
     readonly actor: SanguineActor
     readonly stats: ActorStats
     private waitTime: number
+    private lagTime: number
     private action: transitCombatActionInfo | undefined
     
     constructor(id: string, actor: SanguineActor) {
@@ -16,6 +17,7 @@ export default class CombatActor {
         this.actor = actor
         this.stats = actor.stats
         this.waitTime = 100 * ( 1 - actor.stats.getStatValue(StatTypeEnum.Initiative) )
+        this.lagTime = 0
     }
     
     /* -----------------------------
@@ -113,5 +115,41 @@ export default class CombatActor {
         const action = this.getAction()
         const waitTime = action.waitTime
         this.waitTime = waitTime
-    }    
+    }
+
+    /* -----------------------------
+              TRANSIT
+    ----------------------------- */
+
+    transitWaitTime(): transitWaitTime {
+        const speed: number = this.actor.stats.getStatValue(StatTypeEnum.Speed)
+        let type: "Wait" | "Lag"
+        let quantity: number
+        let ticks: number
+        if ( this.lagTime > 0 ) {
+            type = "Lag"
+            quantity = this.lagTime
+            ticks = this.lagTime
+        } else {
+            type = "Wait"
+            quantity = this.waitTime
+            ticks = Math.ceil(quantity / speed)
+        }
+
+        return {
+            type: type,
+            speed: speed,
+            quantity: quantity,
+            ticks: ticks
+        }
+    }
+
+    transit(): transitCombatActor {
+        return {
+            id: this.id,
+            waitTime: this.transitWaitTime(),
+            location: [0],
+            stance: undefined
+        }
+    }
 }

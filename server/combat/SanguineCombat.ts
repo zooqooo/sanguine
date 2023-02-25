@@ -1,6 +1,6 @@
 import SanguineActor from "../Actor"
 import CombatActor from "./CombatActor"
-import { transitGameTick } from "../_types/CombatTypes"
+import { transitActionLog, transitCombatActionEvent, transitCombatActor, transitGameTick } from "../_types/CombatTypes"
 
 export default class SanguineCombat {
     private started: boolean
@@ -23,14 +23,22 @@ export default class SanguineCombat {
         return this.combatants
     }
 
+    transitActors() : Map<string, transitCombatActor> {
+        let transitActors = new Map<string, transitCombatActor>()
+        for ( const [id, actor] of this.combatants ) {
+            transitActors.set(id, actor.transit())
+        }
+        return transitActors
+    }
+
     /* -----------------------------
                SETTERS
     ----------------------------- */
     
-    addCombatant(actor: SanguineActor): Map<string, CombatActor> {
+    addCombatant(actor: SanguineActor): SanguineCombat {
         const combatActor = new CombatActor(this.createID(actor.getName()), actor)
         this.combatants.set(combatActor.getID(), combatActor)
-        return this.combatants
+        return this
     }
 
     private createID(actorName: string): string {
@@ -69,9 +77,9 @@ export default class SanguineCombat {
         this.requestGameTick()
     }
 
-    requestGameTick(): transitGameTick {
+    requestGameTick(): transitGameTick | "Processing" {
         if ( this.processing ) {
-            return {} as transitGameTick
+            return "Processing"
         }
         this.processing = true
         const gameTick = this.makeGameTick()
@@ -80,6 +88,11 @@ export default class SanguineCombat {
     }
 
     private makeGameTick(): transitGameTick {
+        let gametick = {
+            tick: this.elapsedGameTicks,
+            actors: this.transitActors(),
+            log: new Array<transitActionLog<transitCombatActionEvent>>
+        }
         let readyActors: CombatActor[] = []
         for ( const [id, combatant] of this.combatants ) {
             combatant.updateStance()
@@ -90,7 +103,7 @@ export default class SanguineCombat {
         }
         if ( readyActors.length > 0 ) this.takeActions(readyActors)
         this.elapsedGameTicks++
-        return {} as transitGameTick
+        return gametick
     }
     
     private takeActions(readyActors: CombatActor[]): void {
