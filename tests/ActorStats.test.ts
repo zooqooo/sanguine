@@ -178,6 +178,7 @@ describe('Armor should be applied properly', () => {
 describe('Static stats should be updated properly', () => {
     it('Check speed', () => {
         let stats = new ActorStats()
+        expect(stats.getStat(StatTypeEnum.Speed).isStatic()).toBeTruthy()
         expect(stats.getStatValue(StatTypeEnum.Speed)).toBeCloseTo(0,2)
         stats.addSource(BonusSource.fromSerial(MOCK_BONUS_SOURCES[22])) // +2 Agility, +2 Alacrity
         expect(stats.getStatValue(StatTypeEnum.Speed)).toBeCloseTo(1.24,2)
@@ -191,7 +192,9 @@ describe('Static stats should be updated properly', () => {
 describe('Stats with damage types should be updated properly', () => {
     it('Untyped bonuses shouldnt apply to typed stats', () => {
         let stats = new ActorStats([StatTypeEnum.Protection])
+        expect(stats.getStat(StatTypeEnum.Protection).isDamageTyped()).toBeTruthy()
         let bonus = BonusSource.fromSerial(MOCK_BONUS_SOURCES[26]) //+10% Undefined Protection
+        expect(bonus.getBonuses()[0].stats[0].damageType).to.be.undefined
         expect(() => stats.addSource(bonus)).toThrowError('is damage typed')
     })
 })

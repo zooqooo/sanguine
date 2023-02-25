@@ -112,6 +112,14 @@ export type damagePreRoll = {min: number, max: number, type: damageTypeNU}
 
 export type damageQuant = {quantity: number, type: damageTypeNU}
 
+export type statBonus = {
+    stat: StatTypeEnum,
+    quantity: number,
+    quantType: QuantTypeEnum,
+    quantMult?: StatTypeEnum,
+    damageType?: damageType
+}
+
 export type statInfo = {
     name: StatTypeEnum,
     stacking: StatStackingTypeEnum,

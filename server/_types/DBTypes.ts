@@ -1,4 +1,5 @@
-import { serializedLootTable, serializedStatBonus } from "./SerializedTypes"
+import { serializedLootTable } from "./SerializedTypes"
+import { statBonus } from "./StatTypes"
 
 export enum itemTypeEnum {
     Ingredients_Base,
@@ -34,5 +35,5 @@ export type dbBonusSource = {
 }
 
 export type dbBonusComponent = {
-    stats: serializedStatBonus[]
+    stats: statBonus[]
 }

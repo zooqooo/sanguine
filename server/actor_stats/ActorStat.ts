@@ -1,21 +1,17 @@
 import DataManager from "../DataManager"
-import { damageType, QuantTypeEnum, statInfo, StatStackingTypeEnum, StatTypeEnum } from "../_types/StatTypes"
-import BonusSource from "./BonusSource"
-import StatBonus from "./StatBonus"
+import { statBonus, DamageBaseTypeEnum, DamageSuperTypeEnum, damageType, QuantTypeEnum, statInfo, StatStackingTypeEnum, StatTypeEnum } from "../_types/StatTypes"
 
 export default class ActorStat {
     private statQuantity: number //only used for static stats
     private otherStats: Map<StatTypeEnum, ActorStat>
     private name: StatTypeEnum
     private statInfo: statInfo
-    private bonuses: StatBonus[]
 
     constructor(name: StatTypeEnum) {
         this.otherStats = new Map<StatTypeEnum, ActorStat>()
         this.name = name
         this.statQuantity = 0
         this.statInfo = this.getStatInfo()
-        this.bonuses = new Array<StatBonus>()
     }
 
     provideOtherStats(stats: Map<StatTypeEnum, ActorStat>) {
@@ -56,27 +52,30 @@ export default class ActorStat {
         return StatTypeEnum[this.name]
     }
 
-    get(damageType? : damageType) : number {
+    get(bonuses: statBonus[], damageTypeContext? : damageType) : number {
         if ( this.isStatic() ) return this.statQuantity
-        if ( this.statInfo.damageTyped && typeof damageType == 'undefined' ) throw new Error(`Stat ${this.getName()} is damage typed, it's value cannot be determined without a damage type context`)
+        if ( this.isDamageTyped() && typeof damageTypeContext == 'undefined' ) {
+            throw new Error(`Stat ${this.getName()} is damage typed, it's value cannot be determined without a damage type context`)
+        }
 
-        return this.determine(this.bonuses, damageType)
-    }
-
-    getInstant(extraBonuses: StatBonus[], damageType?: damageType) {
-        if ( this.isStatic() ) return this.statQuantity
-        if ( this.statInfo.damageTyped && typeof damageType == 'undefined' ) throw new Error(`Stat ${this.getName()} is damage typed, it's value cannot be determined without a damage type context`)
-
-        let filteredBonuses = new Array<StatBonus>()
-        for ( const bonus of extraBonuses ) {
-            if ( bonus.getStat() == this.name ) {
+        let filteredBonuses = new Array<statBonus>()
+        for ( const bonus of bonuses ) {
+            if ( bonus.stat == this.name ) {
                 this.checkBonusLegality(bonus)
                 filteredBonuses.push(bonus)
             }
         }
-        const combinedBonuses = filteredBonuses.concat(this.bonuses)
 
-        return this.determine(combinedBonuses, damageType)
+        if ( this.statInfo.damageTyped ) {
+            filteredBonuses = ActorStat.filterByDamageType(filteredBonuses, damageTypeContext!)
+        }
+
+        return this.determine(filteredBonuses, damageTypeContext)
+    }
+
+    getStaticQuant() : number {
+        if ( this.statInfo.damageTyped ) throw new Error(`Stat ${this.getName()} is damage typed, it's value cannot be determined without a damage type context`)
+        return this.statQuantity
     }
 
     isStatic() : boolean {
@@ -100,70 +99,136 @@ export default class ActorStat {
         this.statQuantity = quant
     }
 
+    /* -----------------------------
+          STAT BONUS LEGALITY
+    ----------------------------- */
+
+    private checkBonusLegality(b: statBonus): void {
+        if ( this.isStatic() ) throw new Error(`Stat ${this.getName()} does not allow any modification.`)
+        if ( this.isArithmetic() && !ActorStat.isArithmetic(b) ) throw new Error(`Stat ${this.getName()} is typed arithmetic.`)
+        if ( this.isFurther() && !ActorStat.isFurther(b) ) throw new Error(`Stat ${this.getName()} is typed further.`)
+        if ( this.statInfo.linearOnly && ActorStat.isGeometric(b) ) throw new Error(`Stat ${this.getName()} is linear only.`)
+        if ( this.statInfo.noPenalty && b.quantity < 0 ) throw new Error(`Stat ${this.getName()} does not allow penalties.`)
+        if ( this.isFurther() && ( b.quantity < 0 || 1 < b.quantity ) ) throw new Error(`Further Bonus Error. Bonus values for Stat ${this.getName()} must be between 0 and 1.}`)
+        if ( this.statInfo.damageTyped && !ActorStat.hasDamageType(b) ) throw new Error(`Stat ${this.getName()} is damage typed.`)
+    }
+
+    private static isArithmetic(bonus: statBonus): boolean {
+        const allowedTypes: QuantTypeEnum[] = [QuantTypeEnum.Add, QuantTypeEnum.Increase, QuantTypeEnum.More]
+        return allowedTypes.includes(bonus.quantType)
+    }
+
+    private static isGeometric(bonus: statBonus): boolean {
+        const allowedTypes: QuantTypeEnum[] = [QuantTypeEnum.Increase, QuantTypeEnum.More]
+        return allowedTypes.includes(bonus.quantType)
+    }
+
+    private static isFurther(bonus: statBonus): boolean {
+        const allowedTypes: QuantTypeEnum[] = [QuantTypeEnum.Further]
+        return allowedTypes.includes(bonus.quantType)
+    }
+
+    private static hasDamageType(bonus: statBonus): boolean {
+        return typeof bonus.damageType !== 'undefined'
+    }
+
+    /* -----------------------------
+             DAMAGE TYPE
+    ----------------------------- */
+    
+    private static isPhysical(type: DamageBaseTypeEnum): boolean {
+        const allowedTypes: DamageBaseTypeEnum[] = [DamageBaseTypeEnum.All, DamageBaseTypeEnum.Physical, DamageBaseTypeEnum.Slash, DamageBaseTypeEnum.Pierce, DamageBaseTypeEnum.Smash]
+        return allowedTypes.includes(type)
+    }
+
+    private static isSpecial(type: DamageBaseTypeEnum): boolean {
+        const allowedTypes: DamageBaseTypeEnum[] = [DamageBaseTypeEnum.All, DamageBaseTypeEnum.Special, DamageBaseTypeEnum.Crit, DamageBaseTypeEnum.Blast, DamageBaseTypeEnum.Psychic, DamageBaseTypeEnum.Precision]
+        return allowedTypes.includes(type)
+    }
+
+    private static isElemental(type: DamageBaseTypeEnum): boolean {
+        const allowedTypes: DamageBaseTypeEnum[] = [DamageBaseTypeEnum.All, DamageBaseTypeEnum.Elemental, DamageBaseTypeEnum.Fire, DamageBaseTypeEnum.Water, DamageBaseTypeEnum.Air, DamageBaseTypeEnum.Earth, DamageBaseTypeEnum.Arcane, DamageBaseTypeEnum.Null]
+        return allowedTypes.includes(type)
+    }
+    
+    private static compareDamageSuperTypeContext(type : DamageSuperTypeEnum, context: DamageSuperTypeEnum ): boolean {
+        if ( context == DamageSuperTypeEnum.All ) return true
+        
+        if ( type == DamageSuperTypeEnum.All ) return true
+        if ( context == type ) return true
+
+        return false        
+    }
+
+    private static compareDamageBaseTypeContext(type : DamageBaseTypeEnum, context: DamageBaseTypeEnum ): boolean {
+        if ( context == DamageBaseTypeEnum.All ) return true
+
+        if ( type == DamageBaseTypeEnum.All ) return true
+        if ( context == type ) return true
+
+        if ( context == DamageBaseTypeEnum.Physical && ActorStat.isPhysical(type) ) return true
+        if ( context == DamageBaseTypeEnum.Elemental && ActorStat.isElemental(type) ) return true
+        if ( context == DamageBaseTypeEnum.Special && ActorStat.isSpecial(type) ) return true
+
+        if ( type == DamageBaseTypeEnum.Physical && ActorStat.isPhysical(context) ) return true
+        if ( type == DamageBaseTypeEnum.Elemental && ActorStat.isElemental(context) ) return true
+        if ( type == DamageBaseTypeEnum.Special && ActorStat.isSpecial(context) ) return true
+        
+        return false        
+    }
+
+    static compareDamageContext(damageType : damageType, context: damageType | undefined ): boolean {
+        if ( typeof context == 'undefined' ) return true
+        if ( !this.compareDamageSuperTypeContext(damageType.superType, context.superType) ) return false
+        if ( !this.compareDamageBaseTypeContext(damageType.baseType, context.baseType) ) return false
+        return true
+    }
+
+    static filterByDamageType(bonuses: statBonus[], damageTypeContext: damageType): statBonus[] {
+        let statBonuses: statBonus[] = []
+        for ( const bonus of bonuses ) {
+            if ( ActorStat.compareDamageContext(bonus.damageType!, damageTypeContext) ) {
+                statBonuses.push(bonus)
+            }
+        }
+        return statBonuses
+    }
 
     /* -----------------------------
               GAME LOGIC
     ----------------------------- */
 
-    update(sources: Map<string, BonusSource>): StatBonus[] {
-        this.bonuses = new Array<StatBonus>()
-        for ( const [name, source] of sources ) {
-            source.getBonuses().forEach( (b) => {
-                if ( b.getStat() == this.name ) {
-                    this.checkBonusLegality(b)
-                    this.bonuses!.push(b)
-                }
-            })
-        }
-        return this.bonuses
-    }
-
-    private checkBonusLegality(b: StatBonus): void {
-        if ( this.isStatic() ) throw new Error(`Stat ${this.getName()} does not allow modification. But bonus ${b.getID()} was applied.`)
-        if ( this.isArithmetic() && !b.isArithmetic() ) throw new Error(`Stat ${this.getName()} is typed arithmetic. But bonus ${b.getID()} applies a non-arithmetic bonus`)
-        if ( this.isFurther() && !b.isFurther() ) throw new Error(`Stat ${this.getName()} is typed further. But bonus ${b.getID()} applies a non-further bonus`)
-        if ( this.statInfo.linearOnly && b.isGeometric() ) throw new Error(`Stat ${this.getName()} is linear only. But bonus ${b.getID()} applies a geometric bonus`)
-        if ( this.statInfo.noPenalty && b.getQuantity() < 0 ) throw new Error(`Stat ${this.getName()} does not allow penalties. But bonus ${b.getID()} applies a penalty`)
-        if ( this.isFurther() && ( b.getQuantity() < 0 || 1 < b.getQuantity() ) ) throw new Error(`Further Bonus Error. Bonus values for Stat ${this.getName()} must be between 0 and 1, got ${b.getQuantity()} from ${b.getID()}`)
-        if ( this.statInfo.damageTyped && !b.hasDamageType() ) throw new Error(`Stat ${this.getName()} is damage typed. But bonus ${b.getID()} has no damage type`)
-    }
-    
-    private determine(bonuses: StatBonus[], damageType? : damageType): number {
+    private determine(bonuses: statBonus[], damageTypeContext? : damageType): number {
         if ( this.statInfo.stacking == StatStackingTypeEnum.Arithmetic ) {
-            return this.applyArithmeticBonuses(bonuses, damageType)        
+            this.statQuantity = this.applyArithmeticBonuses(bonuses, damageTypeContext)        
         } else if ( this.statInfo.stacking == StatStackingTypeEnum.Further ) {
-            return this.applyFurtherBonuses(bonuses, damageType)        
-        } else {
-            return this.statQuantity
+            this.statQuantity = this.applyFurtherBonuses(bonuses, damageTypeContext)        
         }
+        return this.statQuantity
     }
 
-    private determineBonus(b: StatBonus): number {
-        let quant = 1
-        if ( b.getQuantMult() !== StatTypeEnum.None ) {
-            if ( this.otherStats.has(b.getQuantMult()) ) {
-                quant = b.getQuantity(this.otherStats.get(b.getQuantMult())!.get())
-            }
+    private determineBonus(b: statBonus): number {
+        let mult = 1
+        if ( typeof b.quantMult !== 'undefined' && b.quantMult !== StatTypeEnum.None ) {
+            mult = this.otherStats.has(b.quantMult!) ? this.otherStats.get(b.quantMult!)!.getStaticQuant() : 1
         }
-        quant = b.getQuantity(quant)
+        let quant = b.quantity * mult
         
         return quant
     }
 
-    private applyArithmeticBonuses(bonuses: StatBonus[], damageType? : damageType): number {
+    private applyArithmeticBonuses(bonuses: statBonus[], damageType? : damageType): number {
         let addModifiers = 0
         let totalIncrease = 1
         let totalMore = 1
 
         for ( const bonus of bonuses ) {
-            if ( bonus.compareDamageContext(damageType) ) {
-                if ( bonus.getQuantType() == QuantTypeEnum.Add ) {
-                    addModifiers = addModifiers + this.determineBonus(bonus)
-                } else if ( bonus.getQuantType() == QuantTypeEnum.Increase ) {
-                    totalIncrease = totalIncrease + this.determineBonus(bonus)
-                } else if ( bonus.getQuantType() == QuantTypeEnum.More ) {
-                    totalMore = totalMore * ( 1 + this.determineBonus(bonus) )
-                }
+            if ( bonus.quantType == QuantTypeEnum.Add ) {
+                addModifiers = addModifiers + this.determineBonus(bonus)
+            } else if ( bonus.quantType == QuantTypeEnum.Increase ) {
+                totalIncrease = totalIncrease + this.determineBonus(bonus)
+            } else if ( bonus.quantType == QuantTypeEnum.More ) {
+                totalMore = totalMore * ( 1 + this.determineBonus(bonus) )
             }
         }
         
@@ -177,13 +242,11 @@ export default class ActorStat {
         return tempQuant
     }
 
-	private applyFurtherBonuses(bonuses: StatBonus[], damageType? : damageType): number {
+	private applyFurtherBonuses(bonuses: statBonus[], damageType? : damageType): number {
         let quant = 1
         for ( const bonus of bonuses ) {
-            if ( bonus.compareDamageContext(damageType) ) {
-                let inverse = 1 - this.determineBonus(bonus)
-                quant = quant * inverse
-            }
+            let inverse = 1 - this.determineBonus(bonus)
+            quant = quant * inverse
         }
         return 1 - quant
 	}

@@ -1,8 +1,8 @@
 import DataManager from "../DataManager"
 import ActorStat from "./ActorStat"
 import BonusSource from "./BonusSource"
-import StatBonus from "./StatBonus"
-import { damageQuant, DamageSuperTypeEnum, damageType, ElementalTypeEnum, StatTypeEnum } from "../_types/StatTypes"
+import { statBonus, damageQuant, DamageSuperTypeEnum, damageType, ElementalTypeEnum, StatTypeEnum } from "../_types/StatTypes"
+import { dbBonusComponent } from "../_types/DBTypes"
 
 function sigmoid(z: number): number {
     return 1 / (1 + Math.exp(-z))
@@ -42,20 +42,21 @@ export default class ActorStats {
     }
 
     getStatValue(name: StatTypeEnum, damageType?: damageType): number {
-        return this.getStat(name).get(damageType)
+        const stat = this.getStat(name)
+        return stat.get(this.filterBonusSourcesToStats(stat), damageType)
     }
 
-    getInstantStatValue(name: StatTypeEnum, bonuses: StatBonus[], damageType?: damageType): number {
-        return this.getStat(name).getInstant(bonuses, damageType)
+    getInstantStatValue(name: StatTypeEnum, bonuses: statBonus[], damageType?: damageType): number {
+        return this.getStat(name).get(bonuses, damageType)
     }
     
     getStatValues(): Map<string, number> {
         let values = new Map<string, number>()
 
-        this.stats.forEach( (e) => {
+        this.stats.forEach( (e, i) => {
             if (!e.isDamageTyped()) {
                 //there's no mechanism to retrieve the generic value of damage typed stats at this point
-                values.set(e.getName(), e.get())
+                values.set(e.getName(), e.get(this.filterBonusSourcesToStats(e)))
             }
         })
         return values
@@ -135,10 +136,37 @@ export default class ActorStats {
     /* ----   UPDATE    ---- */
     
     update(): void {
-        this.stats.forEach( (e) => {
-            e.update(this.getSources())
-        })
+        for ( const [name, stat] of this.stats) {
+            const bonusArray = this.filterBonusSourcesToStats(stat)
+            if ( !stat.isDamageTyped() ) {
+                stat.get(bonusArray)
+            }
+        }
         this.setStaticStats()
+    }
+
+    filterBonusSourcesToStats(stat: ActorStat): statBonus[] {
+        let statBonuses: statBonus[] = []
+        for ( const [id, source] of this.sources ) {
+            for ( const bonus of this.filterBonusComponentsToStats(source.getBonuses()) ) {
+                if ( bonus.stat == stat.getStatType() ) {
+                    if ( stat.isStatic() ) throw new Error(`Stat ${stat.getName()} does not allow modification.`)
+                    if ( stat.isDamageTyped() && typeof bonus.damageType == 'undefined' ) throw new Error(`Stat ${stat.getName()} is damage typed, it's value cannot be determined without a damage type context`)
+                    statBonuses.push(bonus)
+                }
+            }
+        }
+        return statBonuses
+    }
+
+    filterBonusComponentsToStats(bonusComponents: dbBonusComponent[]): statBonus[] {
+        let statBonuses: statBonus[] = []
+        for ( const component of bonusComponents ) {
+            for ( const bonus of component.stats ) {
+                statBonuses.push(bonus)
+            }
+        }
+        return statBonuses
     }
 
     setStaticStats(): void {

@@ -1,5 +1,3 @@
-import { damageType, QuantTypeEnum, StatTypeEnum } from "./StatTypes"
-
 export type serializedActor = {
     name: string,
     inventory?: serializedItem[],
@@ -22,13 +20,5 @@ export type serializedTile = {
 }
 
 export type serializedGame = { character: serializedCharacter, region: serializedTile[] }
-
-export type serializedStatBonus = {
-    stat: StatTypeEnum,
-    quantity: number,
-    quantType: QuantTypeEnum,
-    quantMult?: StatTypeEnum,
-    damageType?: damageType
-}
 
 export type serializedLootTable = { drops: serializedItem[], chance: number }[]

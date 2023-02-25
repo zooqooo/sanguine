@@ -9,6 +9,13 @@ describe('Create Combat', () => {
         expect(combat.getCombatants()).to.deep.equal(new Map<string, CombatActor>())
     })
 
+    it('Create a combat actor', () => {
+        const actor1 = new SanguineActor({name: "Actor1"})
+
+        const combatActor = new CombatActor("Actor1_1", actor1)
+        expect(actor1.stats).to.deep.equal(combatActor.stats)
+    })
+
     it('Add a combat actor', () => {
         const combat = new SanguineCombat()
         let testMap = new Map<string, CombatActor>()

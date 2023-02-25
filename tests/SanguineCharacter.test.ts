@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import ActorStats from '../server/actor_stats/ActorStats'
 import BonusSource from '../server/actor_stats/BonusSource'
-import SanguineCharacter, { serializedCharacter } from '../server/Character'
+import SanguineCharacter from '../server/Character'
 import Inventory from '../server/inventory/Inventory'
 import Item from '../server/inventory/Item'
+import { serializedCharacter } from '../server/_types/SerializedTypes'
 import { StatTypeEnum } from '../server/_types/StatTypes'
 import { MOCK_BONUS_SOURCES } from './testdata/MockBonusSources'
 

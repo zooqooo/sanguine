@@ -1,10 +1,9 @@
 import DataManager from "../DataManager"
-import { dbBonusSource } from "../_types/DBTypes"
-import StatBonus from "./StatBonus"
+import { dbBonusComponent, dbBonusSource } from "../_types/DBTypes"
 
 export default class BonusSource {
     private name!: string
-    private statBonuses!: StatBonus[]
+    private bonuses!: dbBonusComponent[]
 
     static fromName(name: string): BonusSource {
         const bonusSourceInfo = DataManager.getInstance().getBonusSourceData(name as string)
@@ -22,12 +21,10 @@ export default class BonusSource {
     }
 
     setBonusInfo(bonusSourceInfo: dbBonusSource) {
-        this.statBonuses = new Array<StatBonus>()
+        this.bonuses = new Array<dbBonusComponent>()
         this.name = bonusSourceInfo.name
         for ( const bonusComponent of bonusSourceInfo.bonuses ) {
-            for ( const statBonus of bonusComponent.stats ) {
-                this.statBonuses.push(new StatBonus(this.name, statBonus))
-            }
+            this.bonuses.push(bonusComponent)
         }
     }
     
@@ -39,8 +36,8 @@ export default class BonusSource {
         return this.name
     }
     
-    getBonuses() : StatBonus[] {
-        return this.statBonuses
+    getBonuses() : dbBonusComponent[] {
+        return this.bonuses
     }
 
     /* -----------------------------
