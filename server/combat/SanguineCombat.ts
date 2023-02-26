@@ -88,11 +88,6 @@ export default class SanguineCombat {
     }
 
     private makeGameTick(): transitGameTick {
-        let gameTick = {
-            tick: this.elapsedGameTicks,
-            actors: this.transitActors(),
-            log: new Array<transitActionLog<transitCombatActionEvent>>
-        }
         let readyActors: CombatActor[] = []
         for ( const [id, combatant] of this.combatants ) {
             combatant.updateStance()
@@ -103,7 +98,7 @@ export default class SanguineCombat {
         }
         if ( readyActors.length > 0 ) gameTick.log = this.takeActions(readyActors)
         this.elapsedGameTicks++
-        return gameTick
+        return {} as transitGameTick
     }
     
     private takeActions(readyActors: CombatActor[]): Array<transitActionLog<transitCombatActionEvent>> {
