@@ -53,6 +53,24 @@ export default class BonusSource {
         return statBonuses
     }
 
+    static filterBonusComponentsByContext(components: dbBonusComponent[], context: boolean): dbBonusComponent[] {
+        let bonuses = new Array<dbBonusComponent>()
+        for ( const component of components ) {
+            if ( context ) {
+                bonuses.push(component)
+            }
+        }
+        return bonuses
+    }
+
+    static statBonusFromBonusComponent(components: dbBonusComponent[]): statBonus[] {
+        let bonuses = new Array<statBonus>()
+        for ( const component of components ) {
+            bonuses.concat(component.stats)
+        }
+        return bonuses
+    }
+
     /* -----------------------------
                   SAVE
     ----------------------------- */
