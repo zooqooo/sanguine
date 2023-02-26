@@ -1,6 +1,6 @@
 import SanguineActor from "../Actor"
 import ActorStats from "../actor_stats/ActorStats"
-import { ActionTypeEnum, transitCombatAction, transitCombatActionInfo, transitCombatActor, transitCombatAttackInfo, transitWaitTime } from "../_types/CombatTypes"
+import { ActionTypeEnum, transitActionLog, transitCombatAction, transitCombatActionEvent, transitCombatActionInfo, transitCombatActor, transitCombatAttackInfo, transitWaitTime } from "../_types/CombatTypes"
 import { StatTypeEnum } from "../_types/StatTypes"
 import CombatAttack from "./CombatAttack"
 
