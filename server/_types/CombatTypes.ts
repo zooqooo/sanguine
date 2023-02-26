@@ -1,4 +1,3 @@
-import StatBonus from "../actor_stats/StatBonus"
 import { dbBonusComponent } from "./DBTypes"
 import { damagePreRoll } from "./StatTypes"
 

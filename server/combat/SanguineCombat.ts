@@ -1,6 +1,6 @@
 import SanguineActor from "../Actor"
 import CombatActor from "./CombatActor"
-import { transitGameTick } from "../_types/CombatTypes"
+import { transitActionLog, transitCombatActionEvent, transitCombatActor, transitGameTick } from "../_types/CombatTypes"
 
 export default class SanguineCombat {
     private started: boolean
@@ -23,14 +23,22 @@ export default class SanguineCombat {
         return this.combatants
     }
 
+    transitActors() : Map<string, transitCombatActor> {
+        let transitActors = new Map<string, transitCombatActor>()
+        for ( const [id, actor] of this.combatants ) {
+            transitActors.set(id, actor.transit())
+        }
+        return transitActors
+    }
+
     /* -----------------------------
                SETTERS
     ----------------------------- */
     
-    addCombatant(actor: SanguineActor): Map<string, CombatActor> {
+    addCombatant(actor: SanguineActor): SanguineCombat {
         const combatActor = new CombatActor(this.createID(actor.getName()), actor)
         this.combatants.set(combatActor.getID(), combatActor)
-        return this.combatants
+        return this
     }
 
     private createID(actorName: string): string {
@@ -69,9 +77,9 @@ export default class SanguineCombat {
         this.requestGameTick()
     }
 
-    requestGameTick(): transitGameTick {
+    requestGameTick(): transitGameTick | "Processing" {
         if ( this.processing ) {
-            return {} as transitGameTick
+            return "Processing"
         }
         this.processing = true
         const gameTick = this.makeGameTick()
@@ -80,24 +88,32 @@ export default class SanguineCombat {
     }
 
     private makeGameTick(): transitGameTick {
+        let gameTick = {
+            tick: this.elapsedGameTicks,
+            actors: this.transitActors(),
+            log: new Array<transitActionLog<transitCombatActionEvent>>
+        }
         let readyActors: CombatActor[] = []
         for ( const [id, combatant] of this.combatants ) {
             combatant.updateStance()
-            const readyToAct = combatant.makeGameTick()
+            const readyToAct = combatant.processWaitTime()
             if ( readyToAct ) {
                 readyActors.push(combatant)
             }
         }
-        if ( readyActors.length > 0 ) this.takeActions(readyActors)
+        if ( readyActors.length > 0 ) gameTick.log = this.takeActions(readyActors)
         this.elapsedGameTicks++
-        return {} as transitGameTick
+        return gameTick
     }
     
-    private takeActions(readyActors: CombatActor[]): void {
+    private takeActions(readyActors: CombatActor[]): Array<transitActionLog<transitCombatActionEvent>> {
+        let log = new Array<transitActionLog<transitCombatActionEvent>>
         readyActors.sort((a, b) => a.getWaitTime() < b.getWaitTime() ? -1 : a.getWaitTime() < b.getWaitTime() ? 1 : 0)
         //actors should continue having their wait time tick below 0 while in lag time, so that they can be sorted properly here
         for ( const actor of readyActors ) {
-            actor.takeAction()
+            const logItem = actor.takeAction()
+            if ( typeof logItem !== 'undefined' ) log.push(logItem)
         }
+        return log
     }
 }

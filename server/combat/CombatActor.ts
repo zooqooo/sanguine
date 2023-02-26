@@ -1,6 +1,6 @@
 import SanguineActor from "../Actor"
 import ActorStats from "../actor_stats/ActorStats"
-import { ActionTypeEnum, transitCombatAction, transitCombatActionInfo, transitCombatAttackInfo } from "../_types/CombatTypes"
+import { ActionTypeEnum, transitActionLog, transitCombatAction, transitCombatActionEvent, transitCombatActionInfo, transitCombatActor, transitCombatAttackInfo, transitWaitTime } from "../_types/CombatTypes"
 import { StatTypeEnum } from "../_types/StatTypes"
 import CombatAttack from "./CombatAttack"
 
@@ -9,6 +9,7 @@ export default class CombatActor {
     readonly actor: SanguineActor
     readonly stats: ActorStats
     private waitTime: number
+    private lagTime: number
     private action: transitCombatActionInfo | undefined
     
     constructor(id: string, actor: SanguineActor) {
@@ -16,6 +17,7 @@ export default class CombatActor {
         this.actor = actor
         this.stats = actor.stats
         this.waitTime = 100 * ( 1 - actor.stats.getStatValue(StatTypeEnum.Initiative) )
+        this.lagTime = 0
     }
     
     /* -----------------------------
@@ -60,14 +62,7 @@ export default class CombatActor {
               GAME LOGIC
     ----------------------------- */
 
-    makeGameTick(): boolean {
-        this.updateStance()
-        this.updateAction()
-        const readyToAct = this.processWaitTime()
-        return readyToAct
-    }
-
-    private processWaitTime(): boolean {
+    processWaitTime(): boolean {
         // this needs to be able to handle lag time in addition to wait time
         // if they are in lag time, and it decrements to 0, a flag needs to be flipped in the action
         // to mark that the character is ready to act
@@ -95,7 +90,9 @@ export default class CombatActor {
         //all using the set and reset action methods in this class
     }
 
-    takeAction(): void {
+    takeAction(): transitActionLog<transitCombatActionEvent> | undefined{
+        this.updateStance()
+        this.updateAction()
         const action = this.getAction()
         // if the action has lag time and isn't flagged as ready to go
         // set the character's lag time to the action's lag time and return
@@ -107,11 +104,48 @@ export default class CombatActor {
         
         this.resetWaitTime()
         this.resetAction()
+        return undefined
     }
 
     resetWaitTime(): void {
         const action = this.getAction()
         const waitTime = action.waitTime
         this.waitTime = waitTime
-    }    
+    }
+
+    /* -----------------------------
+              TRANSIT
+    ----------------------------- */
+
+    transitWaitTime(): transitWaitTime {
+        const speed: number = this.actor.stats.getStatValue(StatTypeEnum.Speed)
+        let type: "Wait" | "Lag"
+        let quantity: number
+        let ticks: number
+        if ( this.lagTime > 0 ) {
+            type = "Lag"
+            quantity = this.lagTime
+            ticks = this.lagTime
+        } else {
+            type = "Wait"
+            quantity = this.waitTime
+            ticks = Math.ceil(quantity / speed)
+        }
+
+        return {
+            type: type,
+            speed: speed,
+            quantity: quantity,
+            ticks: ticks
+        }
+    }
+
+    transit(): transitCombatActor {
+        return {
+            id: this.id,
+            waitTime: this.transitWaitTime(),
+            location: [0],
+            stance: undefined
+        }
+    }
 }
