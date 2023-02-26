@@ -2,7 +2,7 @@ import DataManager from "../DataManager"
 import { statBonus, DamageBaseTypeEnum, DamageSuperTypeEnum, damageType, QuantTypeEnum, statInfo, StatStackingTypeEnum, StatTypeEnum } from "../_types/StatTypes"
 
 export default class ActorStat {
-    private statQuantity: number //only used for static stats
+    private statQuantity: number
     private otherStats: Map<StatTypeEnum, ActorStat>
     private name: StatTypeEnum
     private statInfo: statInfo
@@ -52,28 +52,28 @@ export default class ActorStat {
         return StatTypeEnum[this.name]
     }
 
-    get(bonuses: statBonus[], damageTypeContext? : damageType) : number {
+    determineValue(bonuses: statBonus[], damageTypeContext? : damageType) : number {
         if ( this.isStatic() ) return this.statQuantity
         if ( this.isDamageTyped() && typeof damageTypeContext == 'undefined' ) {
             throw new Error(`Stat ${this.getName()} is damage typed, it's value cannot be determined without a damage type context`)
         }
 
-        let filteredBonuses = new Array<statBonus>()
-        for ( const bonus of bonuses ) {
-            if ( bonus.stat == this.name ) {
-                this.checkBonusLegality(bonus)
-                filteredBonuses.push(bonus)
-            }
-        }
+        bonuses.filter(bonus => bonus.stat !== this.statInfo.name)
 
         if ( this.statInfo.damageTyped ) {
-            filteredBonuses = ActorStat.filterByDamageType(filteredBonuses, damageTypeContext!)
+            bonuses = ActorStat.filterByDamageType(bonuses, damageTypeContext!)
         }
 
-        return this.determine(filteredBonuses, damageTypeContext)
+        if ( this.statInfo.stacking == StatStackingTypeEnum.Arithmetic ) {
+            this.statQuantity = this.applyArithmeticBonuses(bonuses, damageTypeContext)        
+        } else if ( this.statInfo.stacking == StatStackingTypeEnum.Further ) {
+            this.statQuantity = this.applyFurtherBonuses(bonuses, damageTypeContext)        
+        }
+
+        return this.statQuantity
     }
 
-    getStaticQuant() : number {
+    getStatic() : number {
         if ( this.statInfo.damageTyped ) throw new Error(`Stat ${this.getName()} is damage typed, it's value cannot be determined without a damage type context`)
         return this.statQuantity
     }
@@ -94,7 +94,7 @@ export default class ActorStat {
         return this.statInfo.damageTyped!
     }
 
-    set(quant: number): void {
+    setStatic(quant: number): void {
         if ( !this.isStatic() ) throw new Error(`Stat ${this.getName()} with stacking type ${StatStackingTypeEnum[this.statInfo.stacking]} may not be set explicitly`)
         this.statQuantity = quant
     }
@@ -103,7 +103,8 @@ export default class ActorStat {
           STAT BONUS LEGALITY
     ----------------------------- */
 
-    private checkBonusLegality(b: statBonus): void {
+    checkBonusLegality(b: statBonus): void {
+        if ( b.stat !== this.statInfo.name ) return
         if ( this.isStatic() ) throw new Error(`Stat ${this.getName()} does not allow any modification.`)
         if ( this.isArithmetic() && !ActorStat.isArithmetic(b) ) throw new Error(`Stat ${this.getName()} is typed arithmetic.`)
         if ( this.isFurther() && !ActorStat.isFurther(b) ) throw new Error(`Stat ${this.getName()} is typed further.`)
@@ -198,19 +199,10 @@ export default class ActorStat {
               GAME LOGIC
     ----------------------------- */
 
-    private determine(bonuses: statBonus[], damageTypeContext? : damageType): number {
-        if ( this.statInfo.stacking == StatStackingTypeEnum.Arithmetic ) {
-            this.statQuantity = this.applyArithmeticBonuses(bonuses, damageTypeContext)        
-        } else if ( this.statInfo.stacking == StatStackingTypeEnum.Further ) {
-            this.statQuantity = this.applyFurtherBonuses(bonuses, damageTypeContext)        
-        }
-        return this.statQuantity
-    }
-
     private determineBonus(b: statBonus): number {
         let mult = 1
         if ( typeof b.quantMult !== 'undefined' && b.quantMult !== StatTypeEnum.None ) {
-            mult = this.otherStats.has(b.quantMult!) ? this.otherStats.get(b.quantMult!)!.getStaticQuant() : 1
+            mult = this.otherStats.has(b.quantMult!) ? this.otherStats.get(b.quantMult!)!.getStatic() : 1
         }
         let quant = b.quantity * mult
         

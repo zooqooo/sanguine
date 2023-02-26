@@ -1,5 +1,6 @@
 import DataManager from "../DataManager"
 import { dbBonusComponent, dbBonusSource } from "../_types/DBTypes"
+import { statBonus } from "../_types/StatTypes"
 
 export default class BonusSource {
     private name!: string
@@ -38,6 +39,18 @@ export default class BonusSource {
     
     getBonuses() : dbBonusComponent[] {
         return this.bonuses
+    }
+
+    getStatBonusesByContext(context: boolean): statBonus[] {
+        let statBonuses: statBonus[] = []
+        for ( const component of this.bonuses ) {
+            if ( context ) {
+                for ( const bonus of component.stats ) {
+                    statBonuses.push(bonus)
+                }
+            }
+        }
+        return statBonuses
     }
 
     /* -----------------------------
