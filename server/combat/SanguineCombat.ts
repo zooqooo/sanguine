@@ -1,6 +1,6 @@
 import SanguineActor from "../Actor"
 import CombatActor from "./CombatActor"
-import { transitActionLog, transitCombatActionEvent, transitCombatActor, transitGameTick } from "../_types/CombatTypes"
+import { combatActionLog, combatActionEvent, transitCombatActor, gameTick } from "../_types/CombatTypes"
 
 export default class SanguineCombat {
     private started: boolean
@@ -77,7 +77,7 @@ export default class SanguineCombat {
         this.requestGameTick()
     }
 
-    requestGameTick(): transitGameTick | "Processing" {
+    requestGameTick(): gameTick | "Processing" {
         if ( this.processing ) {
             return "Processing"
         }
@@ -88,11 +88,11 @@ export default class SanguineCombat {
         return gameTick
     }
 
-    private makeGameTick(): transitGameTick {
+    private makeGameTick(): gameTick {
         let gameTick = {
             tick: this.elapsedGameTicks,
             actors: this.transitActors(),
-            log: new Array<transitActionLog<transitCombatActionEvent>>
+            log: new Array<combatActionLog<combatActionEvent>>
         }
         let readyActors: CombatActor[] = []
         for ( const [id, combatant] of this.combatants ) {
@@ -106,8 +106,8 @@ export default class SanguineCombat {
         return gameTick
     }
     
-    private takeActions(readyActors: CombatActor[]): Array<transitActionLog<transitCombatActionEvent>> {
-        let log = new Array<transitActionLog<transitCombatActionEvent>>
+    private takeActions(readyActors: CombatActor[]): Array<combatActionLog<combatActionEvent>> {
+        let log = new Array<combatActionLog<combatActionEvent>>
         readyActors.sort((a, b) => a.getWaitTime() < b.getWaitTime() ? -1 : a.getWaitTime() < b.getWaitTime() ? 1 : 0)
         //actors should continue having their wait time tick below 0 while in lag time, so that they can be sorted properly here
         for ( const actor of readyActors ) {

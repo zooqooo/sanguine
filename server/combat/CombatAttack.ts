@@ -1,7 +1,7 @@
 import { DamageBaseTypeEnum, damagePreRoll, damageQuant, DamageSuperTypeEnum, damageType, StatTypeEnum } from "../_types/StatTypes"
 
 import beta from "@stdlib/random-base-beta"
-import { transitCombatAttackInfo } from "../_types/CombatTypes"
+import { combatAttackInfo } from "../_types/CombatTypes"
 import ActorStats from "../actor_stats/ActorStats"
 
 export default class CombatAttack {
@@ -12,7 +12,7 @@ export default class CombatAttack {
     private accuracy: number
     private crit: boolean
 
-    constructor(attackerStats: ActorStats, defenderStats: ActorStats[], action: transitCombatAttackInfo) {
+    constructor(attackerStats: ActorStats, defenderStats: ActorStats[], action: combatAttackInfo) {
         this.attackerStats = attackerStats
         this.defenderStats = defenderStats
         this.damages = new Array<damageQuant>()

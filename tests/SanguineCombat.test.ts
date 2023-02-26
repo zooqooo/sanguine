@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import SanguineActor from '../server/Actor'
 import CombatActor from '../server/combat/CombatActor'
 import SanguineCombat from '../server/combat/SanguineCombat'
-import { transitCombatActor, transitGameTick } from '../server/_types/CombatTypes'
+import { transitCombatActor, gameTick } from '../server/_types/CombatTypes'
 
 describe('Create Combat', () => {
     it('Create Empty Combat', () => {
@@ -50,7 +50,7 @@ describe('Begin Combat', () => {
             .addCombatant(actor1)
             .addCombatant(actor2)
 
-        const gameTick = combat.requestGameTick() as transitGameTick
+        const gameTick = combat.requestGameTick() as gameTick
 
         let combatants = combat.getCombatants()
         let testMap = new Map<string, transitCombatActor>()
@@ -61,7 +61,7 @@ describe('Begin Combat', () => {
         expect(gameTick.tick).to.deep.equal(0)
         expect(gameTick.actors).to.deep.equal(testMap)
 
-        const gameTick2 = combat.requestGameTick() as transitGameTick
+        const gameTick2 = combat.requestGameTick() as gameTick
 
         expect(gameTick2.tick).to.deep.equal(1)
         expect(gameTick2.actors).to.deep.equal(testMap)

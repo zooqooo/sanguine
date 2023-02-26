@@ -5,20 +5,20 @@ export enum ActionTypeEnum {
     Attack
 }
 
-export type transitGameTick = {
+export type gameTick = {
     tick: number,
     actors: Map<string, transitCombatActor> ,
-    log: transitActionLog<transitCombatActionEvent>[]
+    log: combatActionLog<combatActionEvent>[]
 }
 
 export type transitCombatActor = {
     id: string,
-    waitTime: transitWaitTime,
+    waitTime: waitTime,
     location: number[],
     stance: transitCombatStance | undefined
 }
 
-export type transitWaitTime = {
+export type waitTime = {
     type: "Wait" | "Lag",
     quantity: number,
     speed: number,
@@ -29,24 +29,24 @@ export type transitCombatStance = {
     name: string
 }
 
-export type transitCombatAction<T extends transitCombatActionInfo> = {
+export type transitCombatAction<T extends combatActionInfo> = {
     name: string
     info: T
 }
 
-export interface transitCombatActionInfo {
+export interface combatActionInfo {
     type: ActionTypeEnum,
     waitTime: number,
     lagTime: number
 }
 
-export interface transitCombatAttackInfo extends transitCombatActionInfo {
+export interface combatAttackInfo extends combatActionInfo {
     type: ActionTypeEnum.Attack,
     bonuses: dbBonusComponent[]
     damages: damagePreRoll[]
 }
 
-export type transitActionLog<T extends transitCombatEvent> = {
+export type combatActionLog<T extends combatEvent> = {
     log: string
     event: T
 }
@@ -58,10 +58,10 @@ export enum CombatEventTypeEnum {
     
 }
 
-export interface transitCombatEvent {
+export interface combatEvent {
     type: CombatEventTypeEnum
 }
 
-export interface transitCombatActionEvent extends transitCombatEvent {
+export interface combatActionEvent extends combatEvent {
     type: CombatEventTypeEnum.Action
 }
